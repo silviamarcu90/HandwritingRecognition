@@ -28,9 +28,10 @@ class CTCLayer {
     vector<MatrixXd> eps_c1; /// variable necessary for the backpropagation in the hidden layer: 2 elements [forward; backward]
 
 public:
-    CTCLayer(int K, int H, int T);
+    CTCLayer();
+    CTCLayer(int K, int H);
     virtual ~CTCLayer();
-    void forwardPass(string label, vector<VectorXd> forward_b, vector<VectorXd> backward_b);
+    void forwardPass(int T, string label, vector<VectorXd> forward_b, vector<VectorXd> backward_b);
     void backwardPass();
     void computeForwardVariable();
     void computeBackwardVariable();
@@ -39,6 +40,7 @@ public:
 
 private:
     void initWeights();
+    void initActivations();
     MatrixXd initRandomMatrix(int m, int n);
     MatrixXd compute_exp(MatrixXd a);
     void initAlphabet();

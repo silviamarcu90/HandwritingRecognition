@@ -9,6 +9,7 @@
 #include "featureextractor.h"
 #include "blstm.h"
 #include "ctclayer.h"
+#include "neuralnetwork.h"
 
 using namespace cv;
 using namespace Eigen;
@@ -45,13 +46,15 @@ int main( int argc, char** argv )
 //////////////////////////////////////////
     FeatureExtractor extractor(image);
     vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
-    BLSTM blstm(5, sequenceOfFeatures);
-    blstm.forwardPass();
+//    BLSTM blstm(5, sequenceOfFeatures);
+//    blstm.forwardPass();
 
-    CTCLayer ctc(53, 5, 20);
+//    CTCLayer ctc(53, 5);
+    NeuralNetwork net(10, 53);
+    net.trainNetwork();
 
-    for(unsigned int i = 0; i < 9; ++i)
-        std::cout << sequenceOfFeatures[11][i] << " ";
+//    for(unsigned int i = 0; i < 9; ++i)
+//        std::cout << sequenceOfFeatures[11][i] << " ";
     std::cout << "\n";
     std::cout << "sequenceSize [T] = " << sequenceOfFeatures.size() << "\n";
 
@@ -75,10 +78,10 @@ int main( int argc, char** argv )
 //		std::cout << "\n";
 //	}
 
-    namedWindow( "Display Image", CV_WINDOW_AUTOSIZE );
-    imshow( "Display Image", im_bw );
+//    namedWindow( "Display Image", CV_WINDOW_AUTOSIZE );
+//    imshow( "Display Image", im_bw );
 
-    waitKey(0);
+//    waitKey(0);
 
     return 0;
 }

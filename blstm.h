@@ -17,13 +17,14 @@
  * Class that implements the Bidirectional Long Short Term Memory
  */
 class BLSTM {
+    int I; /// number of input units (at time t)
     int H; /// number of hidden units
     int T; /// number of terms in the input sequence
     int direction; /// 1 = forward, 2 = backward
+    double ETA;
     vector<VectorXd> x; /// input sequence of length T
     //VectorXd prev_b; /// output (activations) at timestep t-1
     vector<LSTM> hiddenLayerNodes;
-    vector<VectorXd> b_c; /// output of memory blocks (LSTM) at each time t -- for the forward sequence
     vector<VectorXd> a_og, b_og; //activations of the output gate
     vector<VectorXd> sc;
     vector<VectorXd> a_c;
@@ -34,12 +35,25 @@ class BLSTM {
     MatrixXd delta_c; /// for the cell
     MatrixXd delta_f; /// for the forget gate
     MatrixXd delta_i; /// for the input gate
+
+    void updateWeightsOfCellInputGate(int c);
+    void updateWeightsOfCellForgetGate(int c);
+    void updateWeightsOfCellOutputGate(int c);
+    void updateWeightsOfCellState(int c);
+
 public:
-    BLSTM(int hiddenUnitsNum, vector<VectorXd> x);
+
+    BLSTM();
+    BLSTM(int hiddenUnitsNum);
     virtual ~BLSTM();
-    void forwardPass();
+    void initActivationsAndDelta(vector< VectorXd > input);
+    void forwardPass(vector< VectorXd > input);
     void backwardPass(MatrixXd eps_c1);
+    void updateWeights(double ETA);
+
     vector<VectorXd> reserve(int s1, int s2);
+
+    vector<VectorXd> b_c; /// output of memory blocks (LSTM) at each time t -- for the forward sequence
 
 };
 

@@ -1,12 +1,24 @@
 #include "ctclayer.h"
 
-CTCLayer::CTCLayer(int K, int H, int T) {
+CTCLayer::CTCLayer(int K, int H) {
     this->H = H;
     this->K = K;
-    this->T = T;
 
     initWeights(); /// init w variable
 
+    initAlphabet();
+}
+
+CTCLayer::CTCLayer() {
+
+}
+
+
+CTCLayer::~CTCLayer() {
+
+}
+
+void CTCLayer::initActivations() {
     MatrixXd a_aux(T, K);
     a = a_aux;
 
@@ -16,28 +28,32 @@ CTCLayer::CTCLayer(int K, int H, int T) {
     MatrixXd delta_aux(T, K);
     delta_k = delta_aux;
 
-    initAlphabet();
-}
-
-CTCLayer::~CTCLayer() {
-
 }
 
 /**
  * function used to compute the outputs of the CTC layer, i.e. y_k
  * given the outputs received from the 2 hidden layers (forward and backward)
  */
-void CTCLayer::forwardPass(string label, vector<VectorXd> forward_b, vector<VectorXd> backward_b) {
+void CTCLayer::forwardPass(int T, string label, vector<VectorXd> forward_b, vector<VectorXd> backward_b) {
+
     VectorXd eSum(T);
     MatrixXd exp_a;
 
-    this->l = label;
+
+    this->T = T; /// length of the input sequence
+    this->l = label; /// output label
+
+    /// initialize inputs with the outputs of the hidden layers
+    this->forward_b = forward_b;
+    this->backward_b = backward_b;
+
+    initActivations(); //new activations for each input label
     createExtendedLabel();
 
-    //w[t] -- matrix K x H
+    //w[i] -- matrix K x H
     //forward_b[t] -- is a vector with the outputs of the hidden layer - H
     for(int t = 0; t < T; ++t) {
-        a.row(t) = w[t]*forward_b[t] + w[t+T]*backward_b[t]; //a[t] is a vector of K
+        a.row(t) = w[0]*forward_b[t] + w[1]*backward_b[t]; //a[t] is a vector of K
     }
 
     // apply softmax function to compute y_k at each timestep t
@@ -52,8 +68,10 @@ void CTCLayer::forwardPass(string label, vector<VectorXd> forward_b, vector<Vect
  * Run the backward pass and compute the residuals
  */
 void CTCLayer::backwardPass() {
+
     computeForwardVariable();
     computeBackwardVariable();
+
     int Uprime = l_prime.size();
 
     //compute p(z|x) for each t
@@ -82,8 +100,8 @@ vector<MatrixXd> CTCLayer::getEpsilonCTC() {
     MatrixXd eps_f(T, H), eps_b(T, H);
     for(int t = 0; t < T; ++t)
     {
-        eps_f.row(t) = delta_k.row(t) * w[t];
-        eps_b.row(t) = delta_k.row(t) * w[t + T];
+        eps_f.row(t) = delta_k.row(t) * w[0];
+        eps_b.row(t) = delta_k.row(t) * w[1];
     }
     eps_c1.push_back(eps_f); //for the forward layer
     eps_c1.push_back(eps_b); // for the backward layer
@@ -92,19 +110,23 @@ vector<MatrixXd> CTCLayer::getEpsilonCTC() {
 }
 
 void CTCLayer::updateWeights(double ETA) {
+    MatrixXd delta_w_forward = MatrixXd::Zero(K, H);
+    MatrixXd delta_w_backward = MatrixXd::Zero(K, H);
 
     for(int t = 0; t < T; ++t) {
-        MatrixXd w_t_forward = w[t];
-        MatrixXd w_t_backward = w[t + T];
         for(int k = 0; k < K; ++k)
             for(int h = 0; h < H; ++h)
             {
-                w_t_forward(k, h) -= ETA*delta_k(t, k)*forward_b[t](h);
-                w_t_backward(k, h) -= ETA*delta_k(t, k)*backward_b[t](h);
+                delta_w_forward(k, h) += delta_k(t, k)*forward_b[t](h);
+                delta_w_backward(k, h) += delta_k(t, k)*backward_b[t](h);
             }
-        w[t] = w_t_forward;
-        w[t + T] = w_t_backward;
     }
+
+    for(int k = 0; k < K; ++k)
+        for(int h = 0; h < H; ++h) {
+            w[0](k, h) -= ETA*delta_w_forward(k, h);
+            w[1](k, h) -= ETA*delta_w_backward(k, h);
+        }
 }
 
 /**
@@ -194,9 +216,10 @@ void CTCLayer::computeBackwardVariable() {
  * internal function - helper for computing the forward variable
  */
 double CTCLayer::f_u(int u) {
-    if(l_prime[u] == ' ' || (u >= 2 && l_prime[u-2] == l_prime[u]))
+    if( (u > 0 && l_prime[u] == ' ')
+            || (u >= 2 && l_prime[u-2] == l_prime[u]))
         return u-1;
-    return u - 2;
+    return (u >= 2) ? (u - 2) : 0;
 }
 
 /**
@@ -204,13 +227,15 @@ double CTCLayer::f_u(int u) {
  */
 double CTCLayer::g_u(int u) {
     int Uprime = l_prime.size();
-    if(l_prime[u] == ' ' || (u+2 < Uprime && l_prime[u+2] == l_prime[u]))
+    if( (u+1 < Uprime && l_prime[u] == ' ')
+            || (u+2 < Uprime && l_prime[u+2] == l_prime[u]))
         return u + 1;
-    return u + 2;
+    return (u + 2 < Uprime) ? (u + 2) : Uprime-1;
 }
 
 void CTCLayer::initWeights() {
-    for(int i = 0; i < 2*T; ++i)
+    // 2 weights - matrices: one for the forwardHiddenLayer and the other for the backward
+    for(int i = 0; i < 2; ++i)
     {
         MatrixXd m = initRandomMatrix(K, H);
         w.push_back(m);

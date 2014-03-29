@@ -23,11 +23,15 @@ double f_derived(double x) {
     return f(x)*(1 - f(x));
 }
 
+double tanh_derived(double x) {
+    return 1 - ( tanh(x)*tanh(x) );
+}
+
 //TODO -- take the derivative of the tanh function
 double h_derived(double x) {
-    return f(x)*(1 - f(x));
+    return tanh_derived(x);
 }
 
 double g_derived(double x) {
-    return h_derived(x);
+    return tanh_derived(x);
 }
