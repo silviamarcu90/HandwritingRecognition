@@ -41,11 +41,11 @@ void LSTM::initWeights() {
     w_hc = initRandomVector(H);
 }
 
-void LSTM::startNewForwardPass(VectorXd x, VectorXd b, VectorXd sc)
+void LSTM::startNewForwardPass(VectorXd x, VectorXd p_b, VectorXd p_sc)
 {
     this->x_t = x;
-    this->prev_b = b;
-    this->prev_sc = sc;
+    this->prev_b = p_b;
+    this->prev_sc = p_sc;
 }
 
 double LSTM::forwardPassInputGate() {

@@ -80,7 +80,9 @@ void CTCLayer::backwardPass() {
         double p = 0;
         for(int u = 0; u < Uprime; ++u)
             p += alpha(t, u) * beta(t, u);
+        p = (p == 0) ? 1e-10 : p; /// to avoid 0 probabilities!!!!! SOLUTION?
         cond_probabs.push_back(p);
+//        cout << "p = " << p << "\n";
     }
 
     //compute residuals (delta_k(t, k)
@@ -102,6 +104,9 @@ vector<MatrixXd> CTCLayer::getEpsilonCTC() {
     {
         eps_f.row(t) = delta_k.row(t) * w[0];
         eps_b.row(t) = delta_k.row(t) * w[1];
+//        if(t == 0) {
+//            cout << "eps_f" << eps_f(t, H-1) << " eps_b: " << eps_b(t, H-1) <<  "\n";
+//        }
     }
     eps_c1.push_back(eps_f); //for the forward layer
     eps_c1.push_back(eps_b); // for the backward layer

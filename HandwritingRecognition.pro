@@ -36,7 +36,9 @@ SOURCES += main.cpp \
     blstm.cpp \
     utils.cpp \
     ctclayer.cpp \
-    neuralnetwork.cpp
+    neuralnetwork.cpp \
+    forwardlayerlstm.cpp \
+    backwardlayerlstm.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
@@ -48,7 +50,9 @@ HEADERS += \
     blstm.h \
     utils.h \
     ctclayer.h \
-    neuralnetwork.h
+    neuralnetwork.h \
+    forwardlayerlstm.h \
+    backwardlayerlstm.h
 
 QMAKE_CXXFLAGS += -std=c++0x
 
