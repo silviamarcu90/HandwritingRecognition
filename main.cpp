@@ -50,11 +50,14 @@ int main( int argc, char** argv )
 //    blstm.forwardPass();
 
 //    CTCLayer ctc(53, 5);
-    NeuralNetwork net(10, 53);
-    net.trainNetwork();
 
-//    for(unsigned int i = 0; i < 9; ++i)
-//        std::cout << sequenceOfFeatures[11][i] << " ";
+/***********************************************************************/
+//    NeuralNetwork net(10, 53);
+//    net.trainNetwork();
+/***********************************************************************/
+
+    for(unsigned int i = 0; i < 9; ++i)
+        std::cout << sequenceOfFeatures[11][i] << " ";
     std::cout << "\n";
     std::cout << "sequenceSize [T] = " << sequenceOfFeatures.size() << "\n";
 
@@ -62,26 +65,25 @@ int main( int argc, char** argv )
     Mat im_bw = image >128;
 
 //	int thresh = 128;
-//	threshold(image, im_bw, thresh, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+//    threshold(image, im_bw, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
 
-//	unsigned char *input = (unsigned char*)(im_bw.data);
-//	int imgStep = im_bw.step;
-//	std::cout << "Step = " << imgStep << "\n";
+//    unsigned char *input = (unsigned char*)(im_bw.data);
+//    int imgStep = im_bw.step;
+//    std::cout << "Step = " << imgStep << "\n";
 
-//	for(int i = 0; i < image.rows; ++i)
-//	{
-//		for(int j = 0; j < image.cols; ++j)
-//		{
-//			std::cout << (int)input[i*imgStep + j] << " ";
-//
-//		}
-//		std::cout << "\n";
-//	}
+//    for(int i = 0; i < image.rows; ++i)
+//    {
+//        for(int j = 0; j < image.cols; ++j)
+//        {
+//            std::cout << (int)input[i*imgStep + j] << " ";
+//        }
+//        std::cout << "\n";
+//    }
 
-//    namedWindow( "Display Image", CV_WINDOW_AUTOSIZE );
-//    imshow( "Display Image", im_bw );
+    namedWindow( "Display Image", CV_WINDOW_AUTOSIZE );
+    imshow( "Display Image", im_bw );
 
-//    waitKey(0);
+    waitKey(0);
 
     return 0;
 }

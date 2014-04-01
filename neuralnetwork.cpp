@@ -56,3 +56,5 @@ void NeuralNetwork::trainExample(vector<VectorXd> x, string label) {
 
 }
 
+//test network -- implement alg Token - passing
+

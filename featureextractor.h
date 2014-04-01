@@ -13,6 +13,7 @@
 
 using namespace cv;
 using namespace Eigen;
+using namespace std;
 
 class FeatureExtractor {
     Mat image; /// original image
@@ -24,9 +25,8 @@ public:
     vector< VectorXd > getFeatures();
 private:
     vector<double> computeFeaturesPerWindow(int winNb);
-    double computeRateOfChange(vector<vector <double> > sequenceOfFeatures, int j, int featurePos);
     VectorXd convertToVectorXd(vector<double> vec);
-
+    double getGradient(int i, int j);
 };
 
 #endif /* FEATUREEXTRACTOR_H_ */
