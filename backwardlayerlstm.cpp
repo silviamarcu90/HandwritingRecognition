@@ -33,7 +33,7 @@ void BackwardLayerLSTM::forwardPass(vector< VectorXd > input) {
             b_og[t](i) = f(a_og[t](i));
 //            std::cout << a_og[t](i) << " ";
             b_c[t](i) = b_og[t](i) * h(sc[t](i));
-//            std::cout << b_c[t](i) << " ";
+//            std::cout << "bc_backward" << b_c[t](i) << " ";
         }
 //        std::cout << "\n";
     }
@@ -122,8 +122,10 @@ void BackwardLayerLSTM::backwardPass(MatrixXd eps_c1) {
             g_ac_eps += g(a_c[t](c))*eps_s(t, c);
 
         //delta for the input gates
-        for(i = 0; i < H; ++i)
+        for(i = 0; i < H; ++i) {
             delta_i(t, i) = f_derived( a_ig[t][i] ) * g_ac_eps;
+//            cout << "[Back]delta_i(t, i): " << delta_i(t, i) <<  "\n";
+        }
     }
 
 }

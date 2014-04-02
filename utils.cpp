@@ -5,13 +5,13 @@ double f(double x) {
 }
 
 double g(double x) {
-    return //sigmoid(x);//
-    tanh(x);
+    return //sigmoid(x);// tanh(x);
+            hyperbolicTangent(x);
 }
 
 double h(double x) {
-    return //sigmoid(x);//
-    tanh(x);
+    return //sigmoid(x);//tanh(x);
+            hyperbolicTangent(x);
 }
 
 double sigmoid(double x) {
@@ -19,15 +19,20 @@ double sigmoid(double x) {
     else return exp(x)/(1 + exp(x));
 }
 
+double hyperbolicTangent(double x) {
+    if(x >= 0) return (1 - exp(-2*x))/(1 + exp(-2*x)); //avoid overflow
+    else return exp(2*x)-1/(exp(2*x) + 1);
+}
+
 double f_derived(double x) {
     return f(x)*(1 - f(x));
 }
 
 double tanh_derived(double x) {
-    return 1 - ( tanh(x)*tanh(x) );
+    double y = hyperbolicTangent(x);
+    return 1 - ( y * y );
 }
 
-//TODO -- take the derivative of the tanh function
 double h_derived(double x) {
     return tanh_derived(x);
 }

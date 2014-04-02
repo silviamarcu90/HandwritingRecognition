@@ -37,7 +37,7 @@ void BLSTM::initActivationsAndDelta(vector< VectorXd > input) {
     delta_c = MatrixXd::Zero(T + 1, H);
     delta_f = MatrixXd::Zero(T + 1, H);
     delta_i = MatrixXd::Zero(T + 1, H);
-    std::cout << "BLSTM - constructor\n";
+    std::cout << "BLSTM --- init LSTM-cells\n";
     for(int i = 0; i < H; ++i)
     {
         LSTM unit(I, H);
@@ -68,7 +68,7 @@ void BLSTM::updateWeights(double eta) {
 
 }
 
-//!!!!!!!!!check inputs that enter in a cell -- if they are proper used for updating!!! -- time t or t-1 -- ask TA??
+//!!!!!!!!!check inputs that enter in a cell -- if they are proper used for updating!!! -- time t or t-1 -- ask??
 
 void BLSTM::updateWeightsOfCellState(int c) {
 
@@ -98,7 +98,9 @@ void BLSTM::updateWeightsOfCellInputGate(int c) {
             gradient_i += delta_i(t, c)*x[t](i);
         }
         hiddenLayerNodes[c].w_iig(i) -= ETA*gradient_i;
+//        cout << "w_iig " << hiddenLayerNodes[c].w_iig(i) << " ";
     }
+//    cout << "\n";
 
     for(int i = 0; i < H; ++i) {
         double gradient_h = 0; //the gradient of the hidden_units-input_gate weights
@@ -106,7 +108,9 @@ void BLSTM::updateWeightsOfCellInputGate(int c) {
             gradient_h += delta_i(t, c)*b_c[t](i);
         }
         hiddenLayerNodes[c].w_hig(i) -= ETA*gradient_h;
+//        cout << "w_hig " << hiddenLayerNodes[c].w_hig(i) << " ";
     }
+//    cout << "\n";
 
     for(int i = 0; i < H; ++i) {
         double gradient_c = 0; //the gradient of the cell_states - input_gate weights
@@ -114,7 +118,9 @@ void BLSTM::updateWeightsOfCellInputGate(int c) {
             gradient_c += delta_i(t, c)*sc[t](i); /// assumption -- the input of this node is the output of interior cell s_c
         }
         hiddenLayerNodes[c].w_cig(i) -= ETA*gradient_c;
+//        cout << "w_cig " << hiddenLayerNodes[c].w_cig(i) << " "; //!? too big values (sometimes)
     }
+//    cout << "\n";
 
 }
 
@@ -173,15 +179,12 @@ void BLSTM::updateWeightsOfCellOutputGate(int c) {
         double gradient_c = 0; //the gradient of the cell_states - output_gate weights
         for(int t = 0; t < T; ++t) {
             gradient_c += delta_o(t, c)*sc[t](i); /// assumption -- the input of this node is the output of interior cell s_c
-//            cout << "delta_o = " << delta_o(t, c) << "\n";
-
         }
-//        cout << "gradient_c = " << gradient_c << "\n";
-//        cout << "sc " << sc[0](i) << "\n";
         hiddenLayerNodes[c].w_cog(i) -= ETA*gradient_c;
+//        cout << "w_cog " << hiddenLayerNodes[c].w_cog(i) << " ";
     }
 
-    cout << "w_cog-after" << hiddenLayerNodes[c].w_cog(H-1) << "\n";
+//    cout << "w_cog-after" << hiddenLayerNodes[c].w_cog(H-1) << "\n";
 
 }
 

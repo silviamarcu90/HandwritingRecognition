@@ -17,13 +17,14 @@ class NeuralNetwork
 
 public:
     NeuralNetwork(int hiddenUnitsNum, int outputUnitsNum) :
+        ETA(0.3),
         forwardHiddenLayer(hiddenUnitsNum),
         backwardHiddenLayer(hiddenUnitsNum),
         outputLayer(outputUnitsNum, hiddenUnitsNum) {
          cout << "Constructor - NeuralNetwork\n";
     }
 
-    void trainNetwork();
+    void trainNetwork(string filePath);
 
     void trainExample(vector<VectorXd> x, string label);
 

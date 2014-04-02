@@ -29,9 +29,9 @@ void ForwardLayerLSTM::forwardPass(vector< VectorXd > input) {
             LSTM memBlock = hiddenLayerNodes[i];
             a_og[t](i) = memBlock.forwardPassOutputGate(sc[t]);
             b_og[t](i) = f(a_og[t](i));
-//            std::cout << a_og[t](i) << " ";
+//            std::cout << "a_og" << a_og[t](i) << " ";
             b_c[t](i) = b_og[t](i) * h(sc[t](i));
-//            std::cout << b_c[t](i) << " ";
+//            std::cout << "bc_forward" << b_c[t](i) << " ";
         }
 //        std::cout << "\n";
     }
@@ -45,11 +45,11 @@ void ForwardLayerLSTM::backwardPass(MatrixXd eps_c1) {
     int c, t, i;
     MatrixXd eps_c(T, H);
     //compute component of delta_o (the sum)
-    VectorXd h_eps(T); // sum_c{1, H} [ h(sc)*eps_c ]
+    VectorXd sum_h_eps(T); // sum_c{1, H} [ h(sc)*eps_c ]
     MatrixXd eps_s(T, H); //  epsilon for cell states
     std::cout << "backward - pass START (-> sense)\n";
 
-    //initilize the delta variables at position T+1
+    //initilize the delta variables at position T+1 -- already initialized from the beginning
 //    for(c = 0; c < H; ++c)
 //    {
 //        delta_i(T, c) = 0;
@@ -60,7 +60,7 @@ void ForwardLayerLSTM::backwardPass(MatrixXd eps_c1) {
 
     for(t = T-1; t >= 0; t--) // iterate backward -- for the forward-hidden layer
     {
-        h_eps[t] = 0;
+        sum_h_eps[t] = 0;
         for(c = 0; c < H; ++c)
         {
             eps_c(t, c) = eps_c1(t, c);
@@ -71,16 +71,15 @@ void ForwardLayerLSTM::backwardPass(MatrixXd eps_c1) {
                 eps_c(t, c) += hiddenLayerNodes[c].w_hog[i]*delta_o(t+1, c);
                 eps_c(t, c) += hiddenLayerNodes[c].w_hc[i]*delta_c(t+1, c);
             }
-            h_eps[t] += h( sc[t](c) )*eps_c(t, c);
-//            cout << "h_eps - " << h_eps(t) << " eps_c: " << eps_c(t, c) <<  "\n";
+            sum_h_eps[t] += h( sc[t](c) )*eps_c(t, c);
+//            cout << "h_eps: " << sum_h_eps(t) << " eps_c: " << eps_c(t, c) <<  "\n";
 
         }
 
         //compute delta for the output gate
         for(i = 0; i < H; ++i) {
-            delta_o(t, i) = f_derived(a_og[t](i)) * h_eps(t);
-//            if(t == 1)
-//                cout << "delta_o(1,:) " << delta_o(t, i) << "\n"; ///???is nan why??
+            delta_o(t, i) = f_derived(a_og[t](i)) * sum_h_eps(t);
+//            cout << "delta_o(t, i) " << delta_o(t, i) << "\n"; ///???is nan why??
         }
 //        if(t == 1) {
 //            cout << "f_derived(a_og)" << f_derived(a_og[t](H-1)) << "\n";
@@ -99,9 +98,11 @@ void ForwardLayerLSTM::backwardPass(MatrixXd eps_c1) {
                     hiddenLayerNodes[i].w_cog(j)*delta_o(t+1, i);
             if(t < T - 1) // condition to add nothing for T+1
                 eps_s(t, i) += b_fg[t + 1](i)*eps_s(t + 1, i);
+//            cout << "eps_s(t, i): " << eps_s(t, i) <<  "\n";
 
             //compute delta for the cells
             delta_c(t, i)  = b_ig[t](i)*g_derived(a_c[t][i])*eps_s(t, i);
+//            cout << "delta_c(t, i): " << delta_c(t, i) <<  "\n";
         }
 
         //compute the sum-factor sum_c { sc(t-1)*eps_s(t) }
@@ -112,16 +113,19 @@ void ForwardLayerLSTM::backwardPass(MatrixXd eps_c1) {
         for(i = 0; i < H; ++i) {
             //delta for the forget gates
             delta_f(t, i) = f_derived(a_fg[t][i])*sc_eps_s;
+//            cout << "delta_f(t, i): " << delta_f(t, i) <<  "\n";
         }
 
         //compute the sum-factor sum_c { g(a_c(t)*eps_s(t) }
         double g_ac_eps = 0;
         for(c = 0; c < H; ++c)
             g_ac_eps += g(a_c[t](c))*eps_s(t, c);
-
+//        cout << "sum g(a_c)*eps_s(t,c) " << g_ac_eps << "\n";
         //delta for the input gates
-        for(i = 0; i < H; ++i)
-            delta_i(t, i) = f_derived( a_ig[t][i] ) * g_ac_eps;
+        for(i = 0; i < H; ++i) {
+            delta_i(t, i) = f_derived( a_ig[t][i] ) * g_ac_eps; //--sometimes too big values => normalize inputs in (0,1)?
+//            cout << "delta_i(t, i): " << delta_i(t, i) <<  "\n";
+        }
     }
 
 }

@@ -19,20 +19,18 @@ CTCLayer::~CTCLayer() {
 }
 
 void CTCLayer::initActivations() {
-    MatrixXd a_aux(T, K);
-    a = a_aux;
 
-    MatrixXd y_aux(T, K);
-    y = y_aux;
+    a =  MatrixXd::Zero(T, K);
 
-    MatrixXd delta_aux(T, K);
-    delta_k = delta_aux;
+    y = MatrixXd::Zero(T, K);
+
+    delta_k = MatrixXd::Zero(T, K);
 
 }
 
 /**
  * function used to compute the outputs of the CTC layer, i.e. y_k
- * given the outputs received from the 2 hidden layers (forward and backward)
+ * given the outputs received from the 2 hidden layers (forward_b and backward_b)
  */
 void CTCLayer::forwardPass(int T, string label, vector<VectorXd> forward_b, vector<VectorXd> backward_b) {
 
@@ -48,19 +46,25 @@ void CTCLayer::forwardPass(int T, string label, vector<VectorXd> forward_b, vect
     this->backward_b = backward_b;
 
     initActivations(); //new activations for each input label
-    createExtendedLabel();
+    createExtendedLabel(); //generate extended label l_prime with spaces between every 2 characters
 
     //w[i] -- matrix K x H
-    //forward_b[t] -- is a vector with the outputs of the hidden layer - H
+    //forward_b[t] -- is a vector with the outputs of the hidden layer - H - at time _t_
     for(int t = 0; t < T; ++t) {
         a.row(t) = w[0]*forward_b[t] + w[1]*backward_b[t]; //a[t] is a vector of K
+//        for(int k = 0; k < K; ++k)
+//            cout << a(t, k) << " ";
+//        cout << "\n";
     }
 
     // apply softmax function to compute y_k at each timestep t
     exp_a = compute_exp(a);
-    eSum = exp_a.rowwise().sum();
+    eSum = exp_a.rowwise().sum(); //compute the sum of the elements of each row
     for(int t = 0; t < T; ++t) {
         y.row(t) = exp_a.row(t)/eSum[t];
+//        for(int k = 0; k < K; ++k)
+//            cout << y(t, k) << " ";
+//        cout << "\n";
     }
 }
 
@@ -85,13 +89,16 @@ void CTCLayer::backwardPass() {
 //        cout << "p = " << p << "\n";
     }
 
-    //compute residuals (delta_k(t, k)
-    for(int t = 0; t < T; ++t)
+    //compute residuals: delta_k(t, k)
+    for(int t = 0; t < T; ++t) {
         for(int k = 0; k < K; ++k)
         {
-            double sum = computeProbability(k, t);
+            double sum = computeProbability(k, t);//get the sum of probabilities of the k letter from the alphabet
             delta_k(t, k) = y(t, k) - sum/cond_probabs[t];
+//            cout << delta_k(t, k) << " ";
         }
+//        cout << "\n";
+    }
 }
 
 /**
@@ -105,7 +112,7 @@ vector<MatrixXd> CTCLayer::getEpsilonCTC() {
         eps_f.row(t) = delta_k.row(t) * w[0];
         eps_b.row(t) = delta_k.row(t) * w[1];
 //        if(t == 0) {
-//            cout << "eps_f" << eps_f(t, H-1) << " eps_b: " << eps_b(t, H-1) <<  "\n";
+//            cout << "eps_f " << eps_f(t, H-1) << " eps_b: " << eps_b(t, H-1) <<  "\n";
 //        }
     }
     eps_c1.push_back(eps_f); //for the forward layer
@@ -119,19 +126,26 @@ void CTCLayer::updateWeights(double ETA) {
     MatrixXd delta_w_backward = MatrixXd::Zero(K, H);
 
     for(int t = 0; t < T; ++t) {
-        for(int k = 0; k < K; ++k)
+        for(int k = 0; k < K; ++k) {
             for(int h = 0; h < H; ++h)
             {
-                delta_w_forward(k, h) += delta_k(t, k)*forward_b[t](h);
-                delta_w_backward(k, h) += delta_k(t, k)*backward_b[t](h);
+                delta_w_forward.coeffRef(k, h) += delta_k(t, k)*forward_b[t](h);
+                delta_w_backward.coeffRef(k, h) += delta_k(t, k)*backward_b[t](h);
             }
+        }
     }
 
-    for(int k = 0; k < K; ++k)
+    for(int k = 0; k < K; ++k) {
         for(int h = 0; h < H; ++h) {
-            w[0](k, h) -= ETA*delta_w_forward(k, h);
-            w[1](k, h) -= ETA*delta_w_backward(k, h);
+//            cout << delta_w_forward(k, h) << " "; //sometimes I get too big values!!: eg. 63
+            w[0].coeffRef(k, h) -= ETA*delta_w_forward(k, h);
+            w[1].coeffRef(k, h) -= ETA*delta_w_backward(k, h);
+//            cout << "w[0] " << w[0](k, h) << " ";
+//            cout << "w[1] " << w[1](k, h) << " ";
         }
+//        cout << "\n";
+    }
+
 }
 
 /**
@@ -165,8 +179,7 @@ char CTCLayer::getKeyByValue(int k) {
 void CTCLayer::computeForwardVariable() {
     int t, u;
     int Uprime = l_prime.size();
-    MatrixXd alpha_aux(T, Uprime);
-    alpha = alpha_aux;
+    alpha = MatrixXd::Zero(T, Uprime);;
 
     //initialization
     alpha(0, 0) = y(0, alphabet[' ']);
@@ -175,18 +188,21 @@ void CTCLayer::computeForwardVariable() {
         alpha(0, u) = 0;
 
     //update for each timestep
-    for(t = 1; t < T; ++t)
+    for(t = 1; t < T; ++t) {
         for(u = 0; u < Uprime; ++u)
         {
-            if(u < Uprime - 2*(T-t) - 1)
-                alpha(t, u) = 0;
-            else {
+//            if(u < Uprime - 2*(T-t) - 1)
+//                alpha(t, u) = 0;
+//            else {
                 alpha(t, u) = 0;
                 for(int i = f_u(u); i <= u; ++i)
                     alpha(t, u) += alpha(t-1, i);
                 alpha(t, u) *= y(t, alphabet[l_prime[u]]);
-            }
+//            }
+//            cout << alpha(t, u) << " ";
         }
+//        cout << "\n";
+    }
 }
 
 
@@ -204,17 +220,20 @@ void CTCLayer::computeBackwardVariable() {
     for(u = 0; u < Uprime - 2; ++u)
         beta(T-1, u) = 0;
 
-    for(t = T-2; t >=0; t--)
+    for(t = T-2; t >=0; t--) {
         for(u = 0; u < Uprime; ++u)
         {
-            if(u > 2*t)
-                beta(t, u) = 0;
-            else {
+//            if(u > 2*t)
+//                beta(t, u) = 0;
+//            else {
                 int upperBound = g_u(u);
                 for(int i = u; i < upperBound; ++i)
                     beta(t,u) = beta(t+1, u)*y(t+1, alphabet[l_prime[i]]);
-            }
+//            }
+//            cout << beta(t, u) << " ";
         }
+//        cout << "\n";
+    }
 }
 
 /**
@@ -253,9 +272,15 @@ MatrixXd CTCLayer::initRandomMatrix(int m, int n) {
     std::default_random_engine generator(seed);
     std::normal_distribution<double> distribution (0.0, 0.1);
 
-    for (int i = 0; i < m; ++i)
-        for (int j = 0; j < n; ++j)
+//    cout << "weightsMatrix\n";
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
             mat(i, j) = distribution(generator);
+//            cout << mat(i, j) << " ";
+        }
+    }
+//    cout << "\n";
+
     return mat;
 }
 

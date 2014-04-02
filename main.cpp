@@ -15,10 +15,11 @@
 using namespace cv;
 using namespace Eigen;
 
-int main( int argc, char** argv )
+int main()
 {
     Mat image;
-    image = imread( "../words/a01/a01-000u/a01-000u-00-01.png",  CV_LOAD_IMAGE_GRAYSCALE );
+    string imagePath("../words/a01/a01-000u/a01-000u-00-02.png");
+    image = imread( imagePath,  CV_LOAD_IMAGE_GRAYSCALE );
 
     if( !image.data )
     {
@@ -31,30 +32,16 @@ int main( int argc, char** argv )
 //    std::normal_distribution<double> distribution (0.0, 0.1);
 //    std::cout << "random number" << distribution(generator) << "\n";
 
-    //////////////////////////////////
-    //test eigen library
-//    MatrixXd m(2,2);
-//    m(0,0) = 3;
-//    m(1,0) = 2.5;
-//    m(0,1) = -1;
-//    m(1,1) = m(1,0) + m(0,1);
-//    std::cout << "Here is the matrix m:\n" << m << std::endl;
-//    VectorXd v(2);
-//    v(0) = 4;
-//    v(1) = v[0] - 1;
-//    std::cout << "Here is the vector v:\n" << v << std::endl;
-
 //////////////////////////////////////////
     FeatureExtractor extractor(image);
     vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
 //    BLSTM blstm(5, sequenceOfFeatures);
 //    blstm.forwardPass();
-
 //    CTCLayer ctc(53, 5);
 
 /***********************************************************************/
     NeuralNetwork net(10, 53);
-    net.trainNetwork();
+    net.trainNetwork(imagePath);
 /***********************************************************************/
     //list all images-collection
 //    ImagesHandler im_handler("../words");
@@ -62,8 +49,8 @@ int main( int argc, char** argv )
 //    for(int i = 0; i < allImagesPaths.size(); ++i)
 //        cout << allImagesPaths[i] << "\n";
 //*********************************************************************/
-    for(unsigned int i = 0; i < 9; ++i)
-        std::cout << sequenceOfFeatures[11][i] << " ";
+//    for(unsigned int i = 0; i < 9; ++i)
+//        std::cout << sequenceOfFeatures[11][i] << " ";
     std::cout << "\n";
     std::cout << "sequenceSize [T] = " << sequenceOfFeatures.size() << "\n";
 
@@ -86,10 +73,10 @@ int main( int argc, char** argv )
 //        std::cout << "\n";
 //    }
 
-    namedWindow( "Display Image", CV_WINDOW_AUTOSIZE );
-    imshow( "Display Image", im_bw );
+//    namedWindow( "Display Image", CV_WINDOW_AUTOSIZE );
+//    imshow( "Display Image", im_bw );
 
-    waitKey(0);
+//    waitKey(0);
 
     return 0;
 }
