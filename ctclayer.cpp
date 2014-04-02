@@ -283,6 +283,7 @@ void CTCLayer::initAlphabet() {
         alphabet.insert( pair<char,int>((char)i, k) );
 
     alphabet.insert( pair<char,int>(' ', k) );
+    //TODO: add more characters to the alphabet -- punctuation marks
     k++;
 
     map<char,int>::iterator it;

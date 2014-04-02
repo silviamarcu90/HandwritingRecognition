@@ -15,7 +15,7 @@ double h(double x) {
 }
 
 double sigmoid(double x) {
-    if(x >= 0) return 1/(1 + exp(-x));
+    if(x >= 0) return 1/(1 + exp(-x)); //avoid overflow
     else return exp(x)/(1 + exp(x));
 }
 

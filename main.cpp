@@ -10,6 +10,7 @@
 #include "blstm.h"
 #include "ctclayer.h"
 #include "neuralnetwork.h"
+#include "imageshandler.h"
 
 using namespace cv;
 using namespace Eigen;
@@ -52,10 +53,15 @@ int main( int argc, char** argv )
 //    CTCLayer ctc(53, 5);
 
 /***********************************************************************/
-//    NeuralNetwork net(10, 53);
-//    net.trainNetwork();
+    NeuralNetwork net(10, 53);
+    net.trainNetwork();
 /***********************************************************************/
-
+    //list all images-collection
+//    ImagesHandler im_handler("../words");
+//    vector<string> allImagesPaths = im_handler.getAllFilesList();
+//    for(int i = 0; i < allImagesPaths.size(); ++i)
+//        cout << allImagesPaths[i] << "\n";
+//*********************************************************************/
     for(unsigned int i = 0; i < 9; ++i)
         std::cout << sequenceOfFeatures[11][i] << " ";
     std::cout << "\n";
