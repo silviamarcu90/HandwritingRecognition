@@ -24,7 +24,7 @@ void NeuralNetwork::trainNetwork(string filePath) {
         FeatureExtractor extractor(imagePath);
         vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
 
-        trainExample( sequenceOfFeatures, "MOVE");
+        trainExample( sequenceOfFeatures, "to");
     }
 }
 

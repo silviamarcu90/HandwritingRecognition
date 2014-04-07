@@ -33,8 +33,8 @@ int main()
 //    std::cout << "random number" << distribution(generator) << "\n";
 
 //////////////////////////////////////////
-    FeatureExtractor extractor(image);
-    vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
+//    FeatureExtractor extractor(image);
+//    vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
 //    BLSTM blstm(5, sequenceOfFeatures);
 //    blstm.forwardPass();
 //    CTCLayer ctc(53, 5);
@@ -49,10 +49,11 @@ int main()
 //    for(int i = 0; i < allImagesPaths.size(); ++i)
 //        cout << allImagesPaths[i] << "\n";
 //*********************************************************************/
+
 //    for(unsigned int i = 0; i < 9; ++i)
 //        std::cout << sequenceOfFeatures[11][i] << " ";
-    std::cout << "\n";
-    std::cout << "sequenceSize [T] = " << sequenceOfFeatures.size() << "\n";
+//    std::cout << "\n";
+//    std::cout << "sequenceSize [T] = " << sequenceOfFeatures.size() << "\n";
 
 //	std::cout << image.depth() << ", " << image.channels() << std::endl;
     Mat im_bw = image >128;

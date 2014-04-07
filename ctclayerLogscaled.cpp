@@ -83,7 +83,7 @@ void CTCLayer::backwardPass() {
     {
         double p = 0;
         for(int u = 0; u < Uprime; ++u)
-            p += alpha(t, u) * beta(t, u);
+            p += exp(alpha(t, u)) * exp(beta(t, u));
         p = (p == 0) ? 1e-10 : p; /// to avoid 0 probabilities!!!!! SOLUTION?
         cond_probabs.push_back(p);
 //        cout << "p = " << p << "\n";
@@ -95,9 +95,9 @@ void CTCLayer::backwardPass() {
         {
             double sum = computeProbability(k, t);//get the sum of probabilities of the k letter from the alphabet
             delta_k(t, k) = y(t, k) - sum/cond_probabs[t];
-//            cout << delta_k(t, k) << " ";
+            cout << delta_k(t, k) << " ";
         }
-//        cout << "\n";
+        cout << "\n";
     }
 }
 
@@ -175,6 +175,7 @@ char CTCLayer::getKeyByValue(int k) {
 
 /**
  * Compute the forward variable: alpha(t, u)
+ * - log scaled - to avoid underflow
  */
 void CTCLayer::computeForwardVariable() {
     int t, u;
@@ -182,22 +183,28 @@ void CTCLayer::computeForwardVariable() {
     alpha = MatrixXd::Zero(T, Uprime);;
 
     //initialization
-    alpha(0, 0) = y(0, alphabet[' ']);
-    alpha(0, 1) = y(0, alphabet[l[0]]);
+    alpha(0, 0) = log( y(0, alphabet[' ']) );
+    alpha(0, 1) = log( y(0, alphabet[l[0]]) );
     for(u = 2; u < Uprime; ++u)
-        alpha(0, u) = 0;
+        alpha(0, u) = -DBL_MAX; //log(0);
+
 
     //update for each timestep
     for(t = 1; t < T; ++t) {
         for(u = 0; u < Uprime; ++u)
         {
 //            if(u < Uprime - 2*(T-t) - 1)
-//                alpha(t, u) = 0;
+//                alpha(t, u) = -DBL_MAX; //log(0);
 //            else {
-                alpha(t, u) = 0;
-                for(int i = f_u(u); i <= u; ++i)
-                    alpha(t, u) += alpha(t-1, i);
-                alpha(t, u) *= y(t, alphabet[l_prime[u]]);
+                int i = f_u(u);
+                double log_a0 = alpha(t-1, i); // because it's log-scaled
+                alpha(t, u) = log_a0;
+                alpha(t, u) += log( y(t, alphabet[l_prime[u]]));
+                double sum = 0.0;
+                i++;
+                for(; i <= u; ++i)
+                    sum += exp( alpha(t-1, i) - log_a0 );
+                alpha(t, u) += log(1 + sum);
 //            }
 //            cout << alpha(t, u) << " ";
         }
@@ -208,6 +215,7 @@ void CTCLayer::computeForwardVariable() {
 
 /**
  * Compute the backward variable: beta(t, u)
+ * - log scaled - to avoid underflow
  */
 void CTCLayer::computeBackwardVariable() {
     int t, u;
@@ -216,9 +224,9 @@ void CTCLayer::computeBackwardVariable() {
     beta = beta_aux;
 
     //initialization
-    beta(T-1, Uprime-1) = beta(T-1, Uprime - 2) = 1;
+    beta(T-1, Uprime-1) = beta(T-1, Uprime - 2) = 0; // log(1)
     for(u = 0; u < Uprime - 2; ++u)
-        beta(T-1, u) = 0;
+        beta(T-1, u) = - DBL_MAX; //log(0);
 
     for(t = T-2; t >=0; t--) {
         for(u = 0; u < Uprime; ++u)
@@ -227,13 +235,26 @@ void CTCLayer::computeBackwardVariable() {
 //                beta(t, u) = 0;
 //            else {
                 int upperBound = g_u(u);
-                for(int i = u; i < upperBound; ++i)
-                    beta(t,u) = beta(t+1, i)*y(t+1, alphabet[l_prime[i]]);
+                double log_b0 = beta(t+1, u) + log( y(t+1, alphabet[l_prime[u]]) );
+//                if(t == T - 2) cout << "log y(t+1, l_u) " << log( y(t+1, alphabet[l_prime[u]]) ) << " log_b0 " << log_b0;
+                beta(t,u) += log_b0; ///
+                double sum = 0.0;
+                for(int i = u + 1; i <= upperBound; ++i) {
+                    double aux = exp(beta(t+1, i) + log( y(t+1, alphabet[l_prime[i]]) ) - log_b0);
+                    aux = (aux == INFINITY) ? DBL_MAX : aux;
+                    sum += aux;
+//                    if(t == T - 2) cout << " log(y): " << log( y(t+1, alphabet[l_prime[i]]) ) <<  " " << beta(t+1, i) ;
+                }
+//                if(t == T - 2)
+//                    cout << " (sum:" << sum << ")";
+                beta(t, u) += log(1 + sum); ///
 //            }
-//            cout << beta(t, u) << " ";
+//                if(t == T - 2)
+//                    cout << beta(t, u) << " ";
         }
 //        cout << "\n";
     }
+
 }
 
 /**

@@ -27,6 +27,7 @@ private:
     vector<double> computeFeaturesPerWindow(int winNb);
     VectorXd convertToVectorXd(vector<double> vec);
     double getGradient(int i, int j);
+    vector< VectorXd > normalizeFeatures(vector< VectorXd > featuresSeq);
 };
 
 #endif /* FEATUREEXTRACTOR_H_ */

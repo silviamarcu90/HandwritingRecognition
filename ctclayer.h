@@ -7,6 +7,7 @@
 #include <string.h>
 #include <vector>
 #include <map>
+#include "float.h"
 #include "../Eigen/Core"
 #include "utils.h"
 

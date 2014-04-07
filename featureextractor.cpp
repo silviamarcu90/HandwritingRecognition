@@ -34,9 +34,46 @@ vector< VectorXd > FeatureExtractor::getFeatures(){
         result.push_back(convertToVectorXd(sequenceOfFeatures[j]));
     }
 
-    return result;
+    return normalizeFeatures(result);
 }
 
+/**
+ * Normalization of the features using the standardization method
+ */
+vector< VectorXd > FeatureExtractor::normalizeFeatures(vector< VectorXd > featuresSeq){
+    int T = featuresSeq.size();
+    int numFeatures = featuresSeq[0].size();
+    VectorXd mean = VectorXd::Zero(numFeatures);
+    VectorXd std_dev = VectorXd::Zero(numFeatures);
+
+    //1. compute mean
+    for(int i = 0; i < T; ++i)
+        mean += featuresSeq[i];
+
+    for(int i = 0; i < numFeatures; ++i)
+        mean(i) /= T;
+
+    //2. compute standard deviation
+    for(int i = 0; i < T; ++i) {
+        VectorXd diff = featuresSeq[i] - mean;
+        for(int j = 0; j < numFeatures; ++j)
+            diff(j) = diff(j) * diff(j);
+        std_dev += diff;
+    }
+    for(int i = 0; i < numFeatures; ++i)
+        std_dev(i) = sqrt( std_dev(i)/T );
+
+    //3. normalize features
+    for(int i = 0; i < T; ++i) {
+        for(int j = 0; j < numFeatures; ++j) {
+            featuresSeq[i](j) = (featuresSeq[i](j) - mean(j)) / std_dev(j);
+//            cout << featuresSeq[i](j) << " ";
+        }
+//        cout << "\n";
+    }
+
+    return featuresSeq;
+}
 
 VectorXd FeatureExtractor::convertToVectorXd(vector<double> vec)
 {
