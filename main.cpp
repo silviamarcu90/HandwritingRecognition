@@ -41,7 +41,12 @@ int main()
 
 /***********************************************************************/
     NeuralNetwork net(10, 53);
-    net.trainNetwork(imagePath);
+    net.trainNetwork();
+
+//    ImagesHandler im_handler("../words");
+//    im_handler.readTargets();
+//    im_handler.getTrainingSet();
+
 /***********************************************************************/
     //list all images-collection
 //    ImagesHandler im_handler("../words");

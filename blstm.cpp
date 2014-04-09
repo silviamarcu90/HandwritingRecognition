@@ -20,8 +20,8 @@ BLSTM::~BLSTM() {
 }
 
 void BLSTM::initActivationsAndDelta(vector< VectorXd > input) {
-    I = input[0].size();
-    T = input.size();
+    this->I = input[0].size();
+    this->T = input.size();
     x = input;
     b_c = reserve(T, H);
     sc = reserve(T, H);
@@ -68,7 +68,7 @@ void BLSTM::updateWeights(double eta) {
 
 }
 
-//!!!!!!!!!check inputs that enter in a cell -- if they are proper used for updating!!! -- time t or t-1 -- ask??
+//!!!!!!!!!check inputs that enter in a cell -- if they are properly used for updating!!! -- time t or t-1 -- ask??
 
 void BLSTM::updateWeightsOfCellState(int c) {
 
@@ -198,7 +198,7 @@ void BLSTM::print() {
 vector<VectorXd> BLSTM::reserve(int s1, int s2) {
     vector<VectorXd> vec;
     for(int i = 0; i < s1; ++i) {
-        VectorXd elem(s2);
+        VectorXd elem = VectorXd::Zero(s2);
         vec.push_back(elem);
     }
     return vec;

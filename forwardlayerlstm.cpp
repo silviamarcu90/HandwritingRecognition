@@ -2,6 +2,7 @@
 
 void ForwardLayerLSTM::forwardPass(vector< VectorXd > input) {
     BLSTM::initActivationsAndDelta(input);
+//    cout << "T = " << T << "\n\n";
     VectorXd prev_b(H), prev_sc(H);
     std::cout << "forward - pass START\n";
     for(int t = 0; t < T; ++t) {
@@ -47,7 +48,7 @@ void ForwardLayerLSTM::backwardPass(MatrixXd eps_c1) {
     //compute component of delta_o (the sum)
     VectorXd sum_h_eps(T); // sum_c{1, H} [ h(sc)*eps_c ]
     MatrixXd eps_s(T, H); //  epsilon for cell states
-    std::cout << "backward - pass START (-> sense)\n";
+    std::cout << "backward - pass START (-> sense) [" << T << "]\n";
 
     //initilize the delta variables at position T+1 -- already initialized from the beginning
 //    for(c = 0; c < H; ++c)

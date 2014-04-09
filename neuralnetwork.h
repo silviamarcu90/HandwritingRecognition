@@ -6,6 +6,7 @@
 #include "backwardlayerlstm.h"
 #include "ctclayer.h"
 #include "featureextractor.h"
+#include "imageshandler.h"
 
 class NeuralNetwork
 {
@@ -21,12 +22,12 @@ public:
         forwardHiddenLayer(hiddenUnitsNum),
         backwardHiddenLayer(hiddenUnitsNum),
         outputLayer(outputUnitsNum, hiddenUnitsNum) {
-         cout << "Constructor - NeuralNetwork\n";
+        cout << "Constructor - NeuralNetwork\n";
     }
 
-    void trainNetwork(string filePath);
+    void trainNetwork();
 
-    void trainExample(vector<VectorXd> x, string label);
+    void trainOneExample(vector<VectorXd> x, string label);
 
 };
 

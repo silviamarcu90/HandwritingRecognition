@@ -39,7 +39,8 @@ SOURCES += main.cpp \
     neuralnetwork.cpp \
     forwardlayerlstm.cpp \
     backwardlayerlstm.cpp \
-    imageshandler.cpp
+    imageshandler.cpp \
+    inputdata.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
@@ -54,7 +55,8 @@ HEADERS += \
     neuralnetwork.h \
     forwardlayerlstm.h \
     backwardlayerlstm.h \
-    imageshandler.h
+    imageshandler.h \
+    inputdata.h
 
 QMAKE_CXXFLAGS += -std=c++0x
 

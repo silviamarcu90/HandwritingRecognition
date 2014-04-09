@@ -85,7 +85,7 @@ void CTCLayer::backwardPass() {
         for(int u = 0; u < Uprime; ++u)
             p += alpha(t, u) * beta(t, u);
         p = (p == 0) ? 1e-10 : p; /// to avoid 0 probabilities!!!!! SOLUTION?
-        cond_probabs.push_back(p);
+        cond_probabs.push_back(p); // p(z|x)
 //        cout << "p = " << p << "\n";
     }
 
@@ -107,6 +107,7 @@ void CTCLayer::backwardPass() {
  */
 vector<MatrixXd> CTCLayer::getEpsilonCTC() {
     MatrixXd eps_f(T, H), eps_b(T, H);
+    eps_c1.resize(0); //reset vector!
     for(int t = 0; t < T; ++t)
     {
         eps_f.row(t) = delta_k.row(t) * w[0];
@@ -308,7 +309,7 @@ void CTCLayer::initAlphabet() {
         alphabet.insert( pair<char,int>((char)i, k) );
 
     alphabet.insert( pair<char,int>(' ', k) );
-    //TODO: add more characters to the alphabet -- punctuation marks
+    //TODO: add more characters in the alphabet -- punctuation marks
     k++;
 
     map<char,int>::iterator it;
@@ -329,5 +330,6 @@ void CTCLayer::createExtendedLabel() {
         aux += string(1, ' ');
     }
     l_prime = aux;
+    cout << "lprime = " << l_prime <<"\n";
 }
 

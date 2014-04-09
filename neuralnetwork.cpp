@@ -1,36 +1,33 @@
 #include "neuralnetwork.h"
 
-//NeuralNetwork::NeuralNetwork(int hiddenUnitsNum, int outputUnitsNum)
-//{
-//    cout << "Constructor - NeuralNetwork\n";
-//    BLSTM fhl(hiddenUnitsNum);
-//    forwardHiddenLayer = fhl;
-//    backwardHiddenLayer = fhl;
-//    CTCLayer ctc(outputUnitsNum, hiddenUnitsNum);
-//    outputLayer = ctc;
-//}
-
-
-void NeuralNetwork::trainNetwork(string filePath) {
+void NeuralNetwork::trainNetwork() {
 
     //TODO: getAllInputs--- FileHandler --- to read the training set -- and transform images into sequences of features
     //[29 March] currently, I read only one image and get the features
-    int nbExamples = 1;
+    int nbExamples;
+    ImagesHandler im_handler;
+    vector<string> trainset = im_handler.getTrainingSet();
+    nbExamples = 10;//trainset.size();
+
+    cout << "trainset_size: " << nbExamples << "\n";
 
     //in a loop -- train the weights until a stop condition is fullfilled
     for(int eg = 0; eg < nbExamples; ++eg)
     {
-        string imagePath(filePath);
+        string imagePath(trainset[eg]);
         FeatureExtractor extractor(imagePath);
         vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
+        string label = im_handler.getTargetLabel(imagePath);
+        cout << imagePath << "; label =" << label << "=" << endl;
 
-        trainExample( sequenceOfFeatures, "to");
+        trainOneExample( sequenceOfFeatures, label );
     }
 }
 
-void NeuralNetwork::trainExample(vector<VectorXd> x, string label) {
+void NeuralNetwork::trainOneExample(vector<VectorXd> x, string label) {
 
     inputs = x;
+
     /// forward pass
     forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
     backwardHiddenLayer.forwardPass(inputs);
@@ -47,12 +44,26 @@ void NeuralNetwork::trainExample(vector<VectorXd> x, string label) {
     outputLayer.backwardPass();
     vector<MatrixXd> eps_c1 = outputLayer.getEpsilonCTC();
     forwardHiddenLayer.backwardPass(eps_c1[0]);
-    backwardHiddenLayer.backwardPass(eps_c1[1]); // the same argument for the backward-hidden layer
+    backwardHiddenLayer.backwardPass(eps_c1[1]);
 
-//    /// update weights
+    /// update weights
     outputLayer.updateWeights(ETA);
     forwardHiddenLayer.updateWeights(ETA);
     backwardHiddenLayer.updateWeights(ETA);
+
+    cout << "AFTER FORWARD-pass -- one example\n";
+    cout << "#############################################################\n";
+
+
+    //DEBUG - gradient!
+//    double epsilon = 10e-3;
+//    outputLayer.w[0](1, 1) += epsilon;
+//    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
+//    outputLayer.backwardPass();
+
+//    outputLayer.w[0](1, 1) -= 2*epsilon;
+//    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
+//    outputLayer.backwardPass();
 
 }
 
