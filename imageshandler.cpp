@@ -83,9 +83,10 @@ vector<string> ImagesHandler::split(string line, char delim) {
  * Read trainset file with the set distributed for training
  * in order to be used further for training the network
  */
-vector<string> ImagesHandler::getTrainingSet() {
+vector<string> ImagesHandler::getDataSet(string setTypeFile) {
+    vector< string> dataset;
     string prefixPath("../words/");
-    ifstream infile("/home/silvia/HandwritingRecognition/setsDistribution/trainset.txt");
+    ifstream infile("/home/silvia/HandwritingRecognition/setsDistribution/" + setTypeFile);
     if(infile == NULL) {
         cout << "Error when opening file!\n";
     }
@@ -93,7 +94,7 @@ vector<string> ImagesHandler::getTrainingSet() {
     int k = 0;
     string line;
     string prevSuffix = "";
-    cout << "Start parsing file: \"trainset.txt\" \n";
+    cout << "Start parsing file: " + setTypeFile + "\n";
     while (getline(infile, line)) {
 
         vector<string> tmpSet;
@@ -103,9 +104,9 @@ vector<string> ImagesHandler::getTrainingSet() {
 //        cout << "1: " << tokens[0] << "; " << tokens[1] << "\n";
         listFilesOfDir(prefixPath + suffix, tmpSet);
 
-        trainset.insert(trainset.end(), tmpSet.begin(), tmpSet.end());
+        dataset.insert(dataset.end(), tmpSet.begin(), tmpSet.end());
         k++;
-        if(k == 1) //extract only a part of the training set
+        if(k == 1) //extract only a part of the training set, i.e one subfolder
             break;
         prevSuffix = suffix;
     }
@@ -113,7 +114,7 @@ vector<string> ImagesHandler::getTrainingSet() {
 //    for(int i = 0; i < trainset.size(); ++i)
 //        cout << trainset[i] << "\n";
 //    cout << trainset.size() << "\n";
-    return trainset;
+    return dataset;
 }
 
 string ImagesHandler::getTargetLabel(string imagePath) {

@@ -76,30 +76,62 @@ void CTCLayer::backwardPass() {
     computeForwardVariable();
     computeBackwardVariable();
 
-    int Uprime = l_prime.size();
+    double logProbab = computeObjectiveFunction();
 
-    //compute p(z|x) for each t
-    for(int t = 0; t < T; ++t)
-    {
-        double p = 0;
-        for(int u = 0; u < Uprime; ++u)
-            p += alpha(t, u) * beta(t, u);
-        p = (p == 0) ? 1e-10 : p; /// to avoid 0 probabilities!!!!! SOLUTION?
-        cond_probabs.push_back(p); // p(z|x)
-//        cout << "p = " << p << "\n";
-    }
+//    for(int t = 0; t < T; ++t)
+//    {
+//        double p = 0;
+//        for(int u = 0; u < Uprime; ++u)
+//            p += alpha(t, u) * beta(t, u);
+//        p = (p == 0) ? 1e-10 : p; /// to avoid 0 probabilities!!!!! SOLUTION?
+//        cond_probabs.push_back(p); // p(z|x) at time t
+////        cout << "p = " << p << "\n";
+//    }
+
 
     //compute residuals: delta_k(t, k)
     for(int t = 0; t < T; ++t) {
         for(int k = 0; k < K; ++k)
         {
-            double sum = computeProbability(k, t);//get the sum of probabilities of the k letter from the alphabet
-            delta_k(t, k) = y(t, k) - sum/cond_probabs[t];
+            double sumProbab = computeProbability(k, t);//get the sum of probabilities of the k letter from the alphabet
+
+            delta_k(t, k) = y(t, k) - safe_exp(log_divide(sumProbab, logProbab));
 //            cout << delta_k(t, k) << " ";
         }
 //        cout << "\n";
     }
+
+    // update objective function - ctc-error
+    trainError += -logProbab;
+    cout << " logProbab" << logProbab << "\n";// << "; exp(logProbab) " << safe_exp(logProbab) << "\n";
+
 }
+
+/**
+ * Compute the objective function L = - ln p(z|x) for the current input
+ */
+double CTCLayer::computeObjectiveFunction() {
+    int Uprime = l_prime.size();
+
+    //compute p(z|x) for t = T-1 using only alpha
+    int t = T - 1;
+    double logProbab = alpha(t, 0);
+    for(int u = 1; u < Uprime; ++u)
+        logProbab = log_add( logProbab, alpha(t, u) );
+
+    return logProbab;
+}
+
+/**
+ * compute error (in order to be used for validation)
+ */
+double CTCLayer::computeError() {
+    computeForwardVariable();
+    computeBackwardVariable();
+
+    return - computeObjectiveFunction(); //-ln [p(z|x)]
+}
+
 
 /**
  * Compute and return the eps_cell term used for the residuals in the hidden layer
@@ -154,12 +186,13 @@ void CTCLayer::updateWeights(double ETA) {
  * at time t in the input sequence
  */
 double CTCLayer::computeProbability(int k, int t) {
-    double probab = 0;
+    double probab = safe_log(0);
     char c = getKeyByValue(k);
     int Uprime = l_prime.size();
+
     for(int u = 0; u < Uprime; ++u)
         if(l_prime[u] == c)
-            probab += alpha(t, u)*beta(t, u);
+            probab = log_add( probab, log_multiply( alpha(t, u), beta(t, u) ));
     return probab;
 }
 
@@ -175,7 +208,7 @@ char CTCLayer::getKeyByValue(int k) {
 }
 
 /**
- * Compute the forward variable: alpha(t, u)
+ * Compute the forward variable: alpha [TxUprime]
  */
 void CTCLayer::computeForwardVariable() {
     int t, u;
@@ -183,10 +216,10 @@ void CTCLayer::computeForwardVariable() {
     alpha = MatrixXd::Zero(T, Uprime);;
 
     //initialization
-    alpha(0, 0) = y(0, alphabet[' ']);
-    alpha(0, 1) = y(0, alphabet[l[0]]);
+    alpha(0, 0) = safe_log( y(0, alphabet[' ']) );
+    alpha(0, 1) = safe_log( y(0, alphabet[l[0]]) );
     for(u = 2; u < Uprime; ++u)
-        alpha(0, u) = 0;
+        alpha(0, u) = safe_log(0);
 
     //update for each timestep
     for(t = 1; t < T; ++t) {
@@ -195,10 +228,13 @@ void CTCLayer::computeForwardVariable() {
 //            if(u < Uprime - 2*(T-t) - 1)
 //                alpha(t, u) = 0;
 //            else {
-                alpha(t, u) = 0;
-                for(int i = f_u(u); i <= u; ++i)
-                    alpha(t, u) += alpha(t-1, i);
-                alpha(t, u) *= y(t, alphabet[l_prime[u]]);
+                int begin_idx = f_u(u);
+                alpha(t, u) = alpha(t-1, begin_idx);
+                for(int i = begin_idx + 1; i <= u; ++i)
+                    alpha(t, u) = log_add( alpha(t, u), alpha(t-1, i) );
+                if(t == 1 && u == 1)
+                    cout << "for letter: " << alphabet[l_prime[u]] << ": " << y(t, alphabet[l_prime[u]]);
+                alpha(t, u) += safe_log( y(t, alphabet[l_prime[u]]) );
 //            }
 //            cout << alpha(t, u) << " ";
         }
@@ -217,9 +253,9 @@ void CTCLayer::computeBackwardVariable() {
     beta = beta_aux;
 
     //initialization
-    beta(T-1, Uprime-1) = beta(T-1, Uprime - 2) = 1;
+    beta(T-1, Uprime-1) = beta(T-1, Uprime - 2) = safe_log(1);
     for(u = 0; u < Uprime - 2; ++u)
-        beta(T-1, u) = 0;
+        beta(T-1, u) = safe_log(0);
 
     for(t = T-2; t >=0; t--) {
         for(u = 0; u < Uprime; ++u)
@@ -228,8 +264,9 @@ void CTCLayer::computeBackwardVariable() {
 //                beta(t, u) = 0;
 //            else {
                 int upperBound = g_u(u);
-                for(int i = u; i < upperBound; ++i)
-                    beta(t,u) = beta(t+1, i)*y(t+1, alphabet[l_prime[i]]);
+                beta(t,u) = beta(t+1, u) + safe_log ( y(t+1, alphabet[l_prime[u]]) );
+                for(int i = u + 1; i <= upperBound; ++i)
+                    beta(t,u) = log_add( beta(t, u), beta(t+1, i) + safe_log( y(t+1, alphabet[l_prime[i]])) );
 //            }
 //            cout << beta(t, u) << " ";
         }
@@ -292,9 +329,13 @@ MatrixXd CTCLayer::compute_exp(MatrixXd a) {
     int m = a.rows(), n = a.cols();
     MatrixXd exp_a(m, n);
 
-    for(int i = 0; i < m; ++i)
-        for(int j = 0; j < n; ++j)
-            exp_a(i, j) = exp( a(i,j) );
+    for(int i = 0; i < m; ++i) {
+        for(int j = 0; j < n; ++j) {
+            exp_a(i, j) = safe_exp( a(i,j) );
+//            cout << exp_a(i, j) << " ";
+        }
+//        cout << "\n";
+    }
 
     return exp_a;
 }
@@ -302,15 +343,22 @@ MatrixXd CTCLayer::compute_exp(MatrixXd a) {
 void CTCLayer::initAlphabet() {
     int k = 0;
 
-    for(int i = 97; i <= 122; ++i, k++)
+    for(int i = 97; i <= 122; ++i, k++) //small letters
         alphabet.insert( pair<char,int>((char)i, k) );
 
-    for(int i = 65; i <= 90; ++i, k++)
+    for(int i = 65; i <= 90; ++i, k++) //capital letters
         alphabet.insert( pair<char,int>((char)i, k) );
 
-    alphabet.insert( pair<char,int>(' ', k) );
+    for(int i = 40; i <= 63; ++i, k++) //capital letters
+        alphabet.insert( pair<char,int>((char)i, k) );
+
+    alphabet.insert( pair<char,int>('?', k) ); k++;
+
+    alphabet.insert( pair<char,int>('"', k) ); k++;
+
+    alphabet.insert( pair<char,int>(' ', k) ); k++; //white-space
     //TODO: add more characters in the alphabet -- punctuation marks
-    k++;
+
 
     map<char,int>::iterator it;
 

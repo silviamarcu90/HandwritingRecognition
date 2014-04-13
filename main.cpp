@@ -17,8 +17,8 @@ using namespace Eigen;
 
 int main()
 {
-    Mat image;
-    string imagePath("../words/a01/a01-000u/a01-000u-00-02.png");
+    Mat image; //a01-000u-03-02.png
+    string imagePath("../words/a01/a01-000u/a01-000u-03-02.png");
     image = imread( imagePath,  CV_LOAD_IMAGE_GRAYSCALE );
 
     if( !image.data )
@@ -35,12 +35,16 @@ int main()
 //////////////////////////////////////////
 //    FeatureExtractor extractor(image);
 //    vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
+//    for(unsigned int i = 0; i < 9; ++i)
+//        std::cout << sequenceOfFeatures[5][i] << " ";
+//    std::cout << "\n";
+//    std::cout << "sequenceSize [T] = " << sequenceOfFeatures.size() << "\n";
 //    BLSTM blstm(5, sequenceOfFeatures);
 //    blstm.forwardPass();
 //    CTCLayer ctc(53, 5);
 
 /***********************************************************************/
-    NeuralNetwork net(10, 53);
+    NeuralNetwork net(50, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
     net.trainNetwork();
 
 //    ImagesHandler im_handler("../words");
@@ -54,11 +58,6 @@ int main()
 //    for(int i = 0; i < allImagesPaths.size(); ++i)
 //        cout << allImagesPaths[i] << "\n";
 //*********************************************************************/
-
-//    for(unsigned int i = 0; i < 9; ++i)
-//        std::cout << sequenceOfFeatures[11][i] << " ";
-//    std::cout << "\n";
-//    std::cout << "sequenceSize [T] = " << sequenceOfFeatures.size() << "\n";
 
 //	std::cout << image.depth() << ", " << image.channels() << std::endl;
     Mat im_bw = image >128;

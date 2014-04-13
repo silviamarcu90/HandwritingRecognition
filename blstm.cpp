@@ -189,7 +189,8 @@ void BLSTM::updateWeightsOfCellOutputGate(int c) {
 }
 
 void BLSTM::print() {
-    cout << "for t = 0\n";
+    cout << "for t = 10\n";
+//    for(int t = 0; t < T; ++t)
     for(int i = 0; i < H; ++i)
         cout << b_c[10](i) << " ";
     cout << "\n";

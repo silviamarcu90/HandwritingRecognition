@@ -25,12 +25,12 @@ public:
     ImagesHandler();
     vector<string> getAllFilesList();
     void createMapImgTargets();
-    vector<string> getTrainingSet();
+    vector<string> getDataSet(string setTypeFile);
     string getTargetLabel(string imagePath);
 
     vector<string> allFilenames;
-    map< string, string > mapImgTarget; /// map containing pairs with key=image_path and value=corresponding-word
-    vector< string> trainset;
+    map< string, string > mapImgTarget; /// map containing pairs with key=image_path and value=corresponding, i.e word
+//    vector< string> trainset;
     string dirPath;
 };
 

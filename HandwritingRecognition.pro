@@ -56,7 +56,8 @@ HEADERS += \
     forwardlayerlstm.h \
     backwardlayerlstm.h \
     imageshandler.h \
-    inputdata.h
+    inputdata.h \
+    log.h
 
 QMAKE_CXXFLAGS += -std=c++0x
 

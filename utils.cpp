@@ -25,7 +25,8 @@ double hyperbolicTangent(double x) {
 }
 
 double f_derived(double x) {
-    return f(x)*(1 - f(x));
+    double y = f(x);
+    return y*(1 - y);
 }
 
 double tanh_derived(double x) {

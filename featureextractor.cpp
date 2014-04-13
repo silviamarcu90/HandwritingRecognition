@@ -66,7 +66,9 @@ vector< VectorXd > FeatureExtractor::normalizeFeatures(vector< VectorXd > featur
     //3. normalize features
     for(int i = 0; i < T; ++i) {
         for(int j = 0; j < numFeatures; ++j) {
-            featuresSeq[i](j) = (featuresSeq[i](j) - mean(j)) / std_dev(j);
+            featuresSeq[i](j) = (featuresSeq[i](j) - mean(j));
+            if(std_dev(j) != 0)
+                featuresSeq[i](j) /= std_dev(j);
 //            cout << featuresSeq[i](j) << " ";
         }
 //        cout << "\n";

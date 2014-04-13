@@ -2,26 +2,51 @@
 
 void NeuralNetwork::trainNetwork() {
 
-    //TODO: getAllInputs--- FileHandler --- to read the training set -- and transform images into sequences of features
-    //[29 March] currently, I read only one image and get the features
     int nbExamples;
     ImagesHandler im_handler;
-    vector<string> trainset = im_handler.getTrainingSet();
-    nbExamples = 10;//trainset.size();
+    vector<string> trainset = im_handler.getDataSet("trainset.txt");
+    vector<string> validationset = im_handler.getDataSet("validationset.txt");
+    nbExamples = 50;//trainset.size();
+    double prevValidationError = 10e5;
 
-    cout << "trainset_size: " << nbExamples << "\n";
+    cout << "trainset_size: " << trainset.size() << "\n";
+    cout << "validationset_size: " << validationset.size() << "\n";
 
-    //in a loop -- train the weights until a stop condition is fullfilled
-    for(int eg = 0; eg < nbExamples; ++eg)
+    out.open("trainErrors20Egs.txt");
+
+    if (!out.is_open())
     {
-        string imagePath(trainset[eg]);
-        FeatureExtractor extractor(imagePath);
-        vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
-        string label = im_handler.getTargetLabel(imagePath);
-        cout << imagePath << "; label =" << label << "=" << endl;
-
-        trainOneExample( sequenceOfFeatures, label );
+        cout << "Failed to open file...\n";
+        return;
     }
+    //in a loop -- train the weights until a stop condition is fullfilled
+    for(int epoch = 0; epoch < 10/*MAX_ITER*/; ++ epoch)
+    {
+
+        outputLayer.trainError = 0.0; // the training error
+        outputLayer.validationError = 0.0;
+        for(int eg = 0; eg < nbExamples; ++ eg)
+        {
+            string imagePath(trainset[eg]);
+            FeatureExtractor extractor(imagePath);
+            vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
+            string label = im_handler.getTargetLabel(imagePath);
+            cout << imagePath << "; label =" << label << "=" << endl;
+
+            trainOneExample( sequenceOfFeatures, label );
+        }
+        cout << "*********************************************************\n";
+        evaluateValidationSet(validationset, im_handler);
+        out << outputLayer.trainError << " ";
+        out << outputLayer.validationError << "\n";
+        if(epoch % 5 == 0)
+            prevValidationError = outputLayer.validationError;
+
+        if(epoch % 5 == 0 && prevValidationError > outputLayer.validationError)
+            break;
+    }
+
+    out.close();
 }
 
 void NeuralNetwork::trainOneExample(vector<VectorXd> x, string label) {
@@ -33,7 +58,7 @@ void NeuralNetwork::trainOneExample(vector<VectorXd> x, string label) {
     backwardHiddenLayer.forwardPass(inputs);
     outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
 
-    /////////DEBUG//////////////
+//    /////////DEBUG//////////////
 //    cout << "FORWARD - layer\n";
 //    forwardHiddenLayer.print();
 //    cout << "BACKWARD - layer\n";
@@ -51,7 +76,7 @@ void NeuralNetwork::trainOneExample(vector<VectorXd> x, string label) {
     forwardHiddenLayer.updateWeights(ETA);
     backwardHiddenLayer.updateWeights(ETA);
 
-    cout << "AFTER FORWARD-pass -- one example\n";
+    cout << "AFTER passing -- one example\n";
     cout << "#############################################################\n";
 
 
@@ -67,5 +92,32 @@ void NeuralNetwork::trainOneExample(vector<VectorXd> x, string label) {
 
 }
 
+/**
+ * validate network
+ */
+void NeuralNetwork::evaluateValidationSet(vector<string> validationset, ImagesHandler im_handler) {
+
+    cout << "VALIDATE!\n";
+    int setSize = 50;//validationset.size();
+
+    for(int i = 0; i < setSize; ++ i)
+    {
+        string imagePath(validationset[i]);
+        FeatureExtractor extractor(imagePath);
+        vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
+        string label = im_handler.getTargetLabel(imagePath);
+        cout << imagePath << "; label =" << label << "=" << endl;
+        inputs = sequenceOfFeatures;
+
+        /// forward pass
+        forwardHiddenLayer.forwardPass(inputs);
+        backwardHiddenLayer.forwardPass(inputs);
+        outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
+
+        /// compute error
+        outputLayer.validationError += outputLayer.computeError();
+    }
+
+}
 //test network -- implement alg Token - passing
 

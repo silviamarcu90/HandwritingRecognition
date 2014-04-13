@@ -10,11 +10,13 @@
 #include "float.h"
 #include "../Eigen/Core"
 #include "utils.h"
+#include "log.h"
 
 using namespace Eigen;
 using namespace std;
 
 class CTCLayer {
+
     int H; /// number of hidden units
     int K; /// number of output units
     int T; /// input sequence length
@@ -29,6 +31,8 @@ class CTCLayer {
     vector<MatrixXd> eps_c1; /// variable necessary for the backpropagation in the hidden layer: 2 elements [forward; backward]
 
 public:
+    double trainError; /// variable used to evaluate the objective function after an epoch for the training set
+    double validationError; /// validation error
     CTCLayer();
     CTCLayer(int K, int H);
     virtual ~CTCLayer();
@@ -38,7 +42,8 @@ public:
     void computeBackwardVariable();
     void updateWeights(double ETA);
     vector<MatrixXd> getEpsilonCTC();
-
+    double computeObjectiveFunction();
+    double computeError();
 private:
     void initWeights();
     void initActivations();
