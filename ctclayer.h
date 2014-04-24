@@ -21,7 +21,7 @@ class CTCLayer {
     int K; /// number of output units
     int T; /// input sequence length
     string l, l_prime;
-    vector< MatrixXd > w; /// weights for the computation of the output units: T x H x K
+public: vector< MatrixXd > w; /// weights for the computation of the output units: T x H x K
     MatrixXd a, y; /// activations and softmax function results: T x K
     MatrixXd alpha, beta; /// forward/backward variables: T x K
     MatrixXd delta_k; /// residual variables of the CTC layer: T x K

@@ -61,9 +61,9 @@ void BLSTM::updateWeights(double eta) {
     //for each cell in the hidden layer
     for(c = 0; c < H; ++c) {
         updateWeightsOfCellInputGate(c);
-        updateWeightsOfCellForgetGate(c);
-        updateWeightsOfCellOutputGate(c);
-        updateWeightsOfCellState(c);
+//        updateWeightsOfCellForgetGate(c);
+//        updateWeightsOfCellOutputGate(c);
+//        updateWeightsOfCellState(c);
     }
 
 }
@@ -97,11 +97,13 @@ void BLSTM::updateWeightsOfCellInputGate(int c) {
         for(int t = 0; t < T; ++t) {
             gradient_i += delta_i(t, c)*x[t](i);
         }
-        hiddenLayerNodes[c].w_iig(i) -= ETA*gradient_i;
+        if(c == 2 && i == 1)
+            cout << "***gradient is: " << gradient_i << "\n";
+//        hiddenLayerNodes[c].w_iig(i) -= ETA*gradient_i;
 //        cout << "w_iig " << hiddenLayerNodes[c].w_iig(i) << " ";
     }
 //    cout << "\n";
-
+    return;
     for(int i = 0; i < H; ++i) {
         double gradient_h = 0; //the gradient of the hidden_units-input_gate weights
         for(int t = 0; t < T; ++t) {

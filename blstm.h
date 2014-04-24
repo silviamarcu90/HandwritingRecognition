@@ -25,7 +25,7 @@ class BLSTM {
         double ETA;
         vector<VectorXd> x; /// input sequence of length T
         //VectorXd prev_b; /// output (activations) at timestep t-1
-        vector<LSTM> hiddenLayerNodes;
+public: vector<LSTM> hiddenLayerNodes;
         vector<VectorXd> a_og, b_og; //activations of the output gate
         vector<VectorXd> sc;
         vector<VectorXd> a_c;

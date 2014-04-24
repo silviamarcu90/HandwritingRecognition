@@ -49,8 +49,7 @@ void LSTM::startNewForwardPass(VectorXd x, VectorXd p_b, VectorXd p_sc)
 }
 
 double LSTM::forwardPassInputGate() {
-    if (DEBUG)
-        std::cout << "INPUT-GATE" << "\n";
+    if (DEBUG) std::cout << "INPUT-GATE" << "\n";
     double a = w_iig.dot(x_t) + w_hig.dot(prev_b) + w_cig.dot(prev_sc);
 //    std::cout << "aa" << ":" << a << " ";
 //    printf("in-rez: %lf\n", a);

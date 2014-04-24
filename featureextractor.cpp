@@ -187,5 +187,6 @@ double FeatureExtractor::getGradient(int i, int j) {
 }
 
 FeatureExtractor::~FeatureExtractor() {
-    // TODO Auto-generated destructor stub
+    image.release();
+    im_bw.release();
 }

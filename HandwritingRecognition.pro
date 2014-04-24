@@ -40,7 +40,8 @@ SOURCES += main.cpp \
     forwardlayerlstm.cpp \
     backwardlayerlstm.cpp \
     imageshandler.cpp \
-    inputdata.cpp
+    inputdata.cpp \
+    testEigenLib.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)

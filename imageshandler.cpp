@@ -106,7 +106,7 @@ vector<string> ImagesHandler::getDataSet(string setTypeFile) {
 
         dataset.insert(dataset.end(), tmpSet.begin(), tmpSet.end());
         k++;
-        if(k == 1) //extract only a part of the training set, i.e one subfolder
+        if(k == 2) //extract only a part of the training set, i.e one subfolder
             break;
         prevSuffix = suffix;
     }

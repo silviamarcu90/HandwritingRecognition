@@ -15,7 +15,7 @@ void ForwardLayerLSTM::forwardPass(vector< VectorXd > input) {
             prev_b = b_c[t-1];
             prev_sc = sc[t-1];
         }
-        for(int i = 0; i < H; ++i) {
+        for(int i = 0; i < H; ++i) { //for each neuron in the hidden layer
             hiddenLayerNodes[i].startNewForwardPass(x_t, prev_b, prev_sc); //use the same weights
             LSTM memBlock = hiddenLayerNodes[i];
             a_ig[t](i) = memBlock.forwardPassInputGate();
@@ -31,7 +31,7 @@ void ForwardLayerLSTM::forwardPass(vector< VectorXd > input) {
             a_og[t](i) = memBlock.forwardPassOutputGate(sc[t]);
             b_og[t](i) = f(a_og[t](i));
 //            std::cout << "a_og" << a_og[t](i) << " ";
-            b_c[t](i) = b_og[t](i) * h(sc[t](i));
+            b_c[t](i) = b_og[t](i) * h(sc[t](i)); //cell outputs
 //            std::cout << "bc_forward" << b_c[t](i) << " ";
         }
 //        std::cout << "\n";

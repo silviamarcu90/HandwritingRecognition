@@ -78,6 +78,8 @@ void CTCLayer::backwardPass() {
 
     double logProbab = computeObjectiveFunction();
 
+    //print the objective function: -ln(z|x)
+    cout << " logProbab is " << -logProbab << "\n";
 //    for(int t = 0; t < T; ++t)
 //    {
 //        double p = 0;
@@ -115,9 +117,9 @@ double CTCLayer::computeObjectiveFunction() {
 
     //compute p(z|x) for t = T-1 using only alpha
     int t = T - 1;
-    double logProbab = alpha(t, 0);
-    for(int u = 1; u < Uprime; ++u)
-        logProbab = log_add( logProbab, alpha(t, u) );
+    double logProbab = log_add( alpha(t, Uprime-1), alpha(t, Uprime-2) ); //page 57, formula 7.4
+//    for(int u = 1; u < Uprime; ++u)
+//        logProbab = log_add( logProbab, alpha(t, u) );
 
     return logProbab;
 }
@@ -168,11 +170,14 @@ void CTCLayer::updateWeights(double ETA) {
         }
     }
 
+    //DEBUG gradient
+//    cout << "gradient is : " << delta_w_forward(1, 3) << "\n";
+
     for(int k = 0; k < K; ++k) {
         for(int h = 0; h < H; ++h) {
 //            cout << delta_w_forward(k, h) << " "; //sometimes I get too big values!!: eg. 63
-            w[0].coeffRef(k, h) -= ETA*delta_w_forward(k, h);
-            w[1].coeffRef(k, h) -= ETA*delta_w_backward(k, h);
+//            w[0].coeffRef(k, h) -= ETA*delta_w_forward(k, h);
+//            w[1].coeffRef(k, h) -= ETA*delta_w_backward(k, h);
 //            cout << "w[0] " << w[0](k, h) << " ";
 //            cout << "w[1] " << w[1](k, h) << " ";
         }
