@@ -24,7 +24,7 @@ private:
 public:
     ImagesHandler();
     vector<string> getAllFilesList();
-    void createMapImgTargets();
+    void createMapImgTargetLabels();
     vector<string> getDataSet(string setTypeFile);
     string getTargetLabel(string imagePath);
 

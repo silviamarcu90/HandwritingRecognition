@@ -22,7 +22,7 @@ class NeuralNetwork
 public:
     ofstream out;
     NeuralNetwork(int hiddenUnitsNum, int outputUnitsNum) :
-        ETA(0.001),
+        ETA(0.01),
         forwardHiddenLayer(hiddenUnitsNum),
         backwardHiddenLayer(hiddenUnitsNum),
         outputLayer(outputUnitsNum, hiddenUnitsNum) {

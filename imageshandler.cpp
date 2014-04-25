@@ -2,7 +2,7 @@
 
 ImagesHandler::ImagesHandler()
 {
-    createMapImgTargets();
+    createMapImgTargetLabels();
 }
 
 vector<string> ImagesHandler::getAllFilesList() {
@@ -49,7 +49,7 @@ void ImagesHandler::listFilesOfDir(string dir, vector<string>& allFiles) {
  * Function used to read corresponding transcriptions of the images
  * and to create a dictionary <key=imageName, value=transcription>
  */
-void ImagesHandler::createMapImgTargets() {
+void ImagesHandler::createMapImgTargetLabels() {
 
     ifstream infile("/home/silvia/HandwritingRecognition/words.txt");
     if(infile == NULL) {

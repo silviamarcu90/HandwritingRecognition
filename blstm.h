@@ -20,6 +20,7 @@ class BLSTM {
     protected:
         int I; /// number of input units (at time t)
         int H; /// number of hidden units
+        int C;
         int T; /// number of terms in the input sequence
         int direction; /// 1 = forward, 2 = backward
         double ETA;

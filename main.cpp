@@ -44,7 +44,7 @@ int main()
 //    CTCLayer ctc(53, 5);
 
 /***********************************************************************/
-    NeuralNetwork net(50, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
+    NeuralNetwork net(10, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
     net.trainNetwork();
 
 //    ImagesHandler im_handler("../words");

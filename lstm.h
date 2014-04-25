@@ -22,7 +22,8 @@ using namespace std;
  */
 class LSTM {
     int I; //#input units
-    int H; //#hidden units; C = H - connections in the hidden layer
+    int H; //#hidden units;
+    int C; //C = H - cells inside a LSTM block
     VectorXd x_t; // input at time t
     VectorXd prev_b; // output (activations) at timestep t-1
     VectorXd prev_sc; //cell states at previous timestep: t-1
@@ -34,10 +35,16 @@ public:
     VectorXd w_cig, w_cfg, w_cog; //weights between cell-states and gates
     VectorXd w_hig, w_hfg, w_hog; //weights between hidden units and gates
     VectorXd w_ic, w_hc; //weights between cells and input/hidden units
+    //delta weights from the previous epoch used to update the weights using momentum term
+    VectorXd delta_w_iig, delta_w_ifg, delta_w_iog; //weights between inputs and gates
+    VectorXd delta_w_cig, delta_w_cfg, delta_w_cog; //weights between cell-states and gates
+    VectorXd delta_w_hig, delta_w_hfg, delta_w_hog; //weights between hidden units and gates
+    VectorXd delta_w_ic, delta_w_hc; //weights between cells and input/hidden units
 
     LSTM(int inputUnitsNum, int hiddenUnitsNum);
     virtual ~LSTM();
     void initWeights();
+    void iniDeltaWeights();
 
     void startNewForwardPass(VectorXd x, VectorXd b, VectorXd sc);
     double forwardPassInputGate();

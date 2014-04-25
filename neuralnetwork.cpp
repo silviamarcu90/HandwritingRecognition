@@ -6,13 +6,13 @@ void NeuralNetwork::trainNetwork() {
     ImagesHandler im_handler;
     vector<string> trainset = im_handler.getDataSet("trainset.txt");
     vector<string> validationset = im_handler.getDataSet("validationset1.txt");
-    nbExamples = 1;//trainset.size();
+    nbExamples = 50;//trainset.size();
     double prevValidationError = 10e5;
 
     cout << "trainset_size: " << trainset.size() << "\n";
     cout << "validationset_size: " << validationset.size() << "\n";
 
-    out.open("trainErrors1Egs_1ITER.txt");
+    out.open("trainErrors50Egs_40ITER10LSTM0.01ETA-stop.txt");
 
     if (!out.is_open())
     {
@@ -20,7 +20,7 @@ void NeuralNetwork::trainNetwork() {
         return;
     }
     //in a loop -- train the weights until a stop condition is fullfilled
-    for(int epoch = 0; epoch < 1/*MAX_ITER*/; ++ epoch)
+    for(int epoch = 0; epoch < 300/*MAX_ITER*/; ++ epoch)
     {
 
         outputLayer.trainError = 0.0; // the training error
@@ -32,18 +32,19 @@ void NeuralNetwork::trainNetwork() {
             vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
             string label = im_handler.getTargetLabel(imagePath);
 //            cout << imagePath << "; label =" << label << "=" << endl;
-
-            trainOneExampleDebug( sequenceOfFeatures, label );
+            trainOneExample( sequenceOfFeatures, label );
+//            trainOneExampleDebug( sequenceOfFeatures, label );
         }
+        outputLayer.trainError /= nbExamples;
+        cout << "ctcError: " << outputLayer.trainError << "\n";
         cout << "*********************************************************\n";
-//        evaluateValidationSet(validationset, im_handler);
+        evaluateValidationSet(validationset, im_handler);
         out << (epoch+1) << " " << outputLayer.trainError << " ";
         out << outputLayer.validationError << "\n";
-//        if(epoch % 5 == 0)
-//            prevValidationError = outputLayer.validationError;
-
-//        if(epoch % 5 == 0 && prevValidationError > outputLayer.validationError)
+//        if( outputLayer.validationError - prevValidationError > 0.1) //error starts to increase
 //            break;
+//        prevValidationError = outputLayer.validationError;
+
     }
 
     out.close();
@@ -113,38 +114,39 @@ void NeuralNetwork::trainOneExampleDebug(vector<VectorXd> x, string label) {
 
 
     //DEBUG - gradient!
-    double epsilon = 1e-3;
-    int c = 2, i = 1, j = 3;
-//    cout << "w[0](1,1) = " << outputLayer.w[0](i,j) << "\n";
-//    outputLayer.w[0](i, j) += epsilon;
-//    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
-//    outputLayer.backwardPass();
-//    double Ominus = outputLayer.computeObjectiveFunction();
-//    cout << "w[0](1,1) = " << outputLayer.w[0](i,j) << "\n";
-
-//    outputLayer.w[0](i, j) -= 2*epsilon; //because I need to subtract the previous addition
-//    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
-//    outputLayer.backwardPass();
-//    double Oplus = outputLayer.computeObjectiveFunction();
-//    cout << "w[0](1,1) = " << outputLayer.w[0](i, j) << "\n";
-//    cout << "finite diff: " << (Oplus - Ominus)/(2*epsilon) << "\n";
-    cout << "w_ic(1,1) = " << forwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) << "\n";
-    forwardHiddenLayer.hiddenLayerNodes[c].w_iig(i) += epsilon;
-    forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
-    backwardHiddenLayer.forwardPass(inputs);
+    double epsilon = 1e-4;
+    int c = 2, i = 1, j = 4;
+    cout << "w[0](1,1) = " << outputLayer.w[0](i,j) << "\n";
+    outputLayer.w[0](i, j) += epsilon;
     outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
     outputLayer.backwardPass();
-    double Ominus = outputLayer.computeObjectiveFunction();
-    cout << "w_ic(1,1) = " << forwardHiddenLayer.hiddenLayerNodes[c].w_iig(i) << "\n";
+    double Oplus = -outputLayer.computeObjectiveFunction();
+    cout << "w[0](1,1) = " << outputLayer.w[0](i,j) << "\n";
 
-    forwardHiddenLayer.hiddenLayerNodes[c].w_iig(i) -= 2*epsilon; //because I need to subtract the previous addition
-    forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
-    backwardHiddenLayer.forwardPass(inputs);
+    outputLayer.w[0](i, j) -= 2*epsilon; //because I need to subtract the previous addition
     outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
     outputLayer.backwardPass();
-    double Oplus = outputLayer.computeObjectiveFunction();
-    cout << "w_ic(1,1) = " << forwardHiddenLayer.hiddenLayerNodes[c].w_iig(i) << "\n";
+    double Ominus = -outputLayer.computeObjectiveFunction();
+    cout << "w[0](1,1) = " << outputLayer.w[0](i, j) << "\n";
     cout << "finite diff: " << (Oplus - Ominus)/(2*epsilon) << "\n";
+
+//    cout << "[NN] before: w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_hog(i) << "\n";
+//    backwardHiddenLayer.hiddenLayerNodes[c].w_hog(i) += epsilon;
+//    forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
+//    backwardHiddenLayer.forwardPass(inputs);
+//    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
+//    outputLayer.backwardPass();
+//    double Oplus = -outputLayer.computeObjectiveFunction();
+//    cout << "[NN]w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_hog(i) << "\n";
+
+//    backwardHiddenLayer.hiddenLayerNodes[c].w_hog(i) -= 2*epsilon; //because I need to subtract the previous addition
+//    forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
+//    backwardHiddenLayer.forwardPass(inputs);
+//    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
+//    outputLayer.backwardPass();
+//    double Ominus = -outputLayer.computeObjectiveFunction();
+//    cout << "[NN]w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_hog(i) << "\n";
+//    cout << "finite diff: " << (Oplus - Ominus)/(2*epsilon) << "\n";
 
 }
 
@@ -154,7 +156,7 @@ void NeuralNetwork::trainOneExampleDebug(vector<VectorXd> x, string label) {
 void NeuralNetwork::evaluateValidationSet(vector<string> validationset, ImagesHandler im_handler) {
 
     cout << "VALIDATE!\n";
-    int setSize = 100;///validationset.size();
+    int setSize = 50;///validationset.size();
 
     for(int i = 0; i < setSize; ++ i)
     {
@@ -173,6 +175,8 @@ void NeuralNetwork::evaluateValidationSet(vector<string> validationset, ImagesHa
         /// compute error
         outputLayer.validationError += outputLayer.computeError();
     }
+
+    outputLayer.validationError /= setSize;
 
 }
 //test network -- implement alg Token - passing

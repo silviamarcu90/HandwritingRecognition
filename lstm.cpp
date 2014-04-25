@@ -11,6 +11,7 @@
 LSTM::LSTM(int inputUnitsNum, int hiddenUnitsNum) {
     this->I= inputUnitsNum;
     this->H = hiddenUnitsNum;
+    this->C = 1;
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine g(seed);
     std::normal_distribution<double> distrib (0.0, 0.1);
@@ -33,12 +34,30 @@ void LSTM::initWeights() {
     w_hfg = initRandomVector(H);
     w_hog = initRandomVector(H);
 
-    w_cig = initRandomVector(H);
-    w_cfg = initRandomVector(H);
-    w_cog = initRandomVector(H);
+    w_cig = initRandomVector(C);
+    w_cfg = initRandomVector(C);
+    w_cog = initRandomVector(C);
 
     w_ic = initRandomVector(I);
     w_hc = initRandomVector(H);
+}
+
+void LSTM::initDeltaWeights() {
+
+    delta_w_iig = initRandomVector(I);
+    delta_w_ifg = initRandomVector(I);
+    delta_w_iog = initRandomVector(I);
+
+    delta_w_hig = initRandomVector(H);
+    delta_w_hfg = initRandomVector(H);
+    delta_w_hog = initRandomVector(H);
+
+    delta_w_cig = initRandomVector(C);
+    delta_w_cfg = initRandomVector(C);
+    delta_w_cog = initRandomVector(C);
+
+    delta_w_ic = initRandomVector(I);
+    delta_w_hc = initRandomVector(H);
 }
 
 void LSTM::startNewForwardPass(VectorXd x, VectorXd p_b, VectorXd p_sc)
