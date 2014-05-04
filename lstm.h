@@ -8,6 +8,7 @@
 #ifndef LSTM_H_
 #define LSTM_H_
 #include <iostream>
+#include <fstream>
 #include <chrono>
 #include <random>
 #include <time.h>
@@ -23,7 +24,7 @@ using namespace std;
 class LSTM {
     int I; //#input units
     int H; //#hidden units;
-    int C; //C = H - cells inside a LSTM block
+    int C; //C = 1 - cells inside an LSTM block
     VectorXd x_t; // input at time t
     VectorXd prev_b; // output (activations) at timestep t-1
     VectorXd prev_sc; //cell states at previous timestep: t-1
@@ -42,9 +43,12 @@ public:
     VectorXd delta_w_ic, delta_w_hc; //weights between cells and input/hidden units
 
     LSTM(int inputUnitsNum, int hiddenUnitsNum);
+    LSTM(int inputUnitsNum, int hiddenUnitsNum, istream& fin);
     virtual ~LSTM();
     void initWeights();
-    void iniDeltaWeights();
+    void initDeltaWeights();
+    void printWeights(ostream &out);
+    void readWeights(istream &fin);
 
     void startNewForwardPass(VectorXd x, VectorXd b, VectorXd sc);
     double forwardPassInputGate();
@@ -54,6 +58,8 @@ public:
 
 private:
     VectorXd initRandomVector(int size);
+    void printVector(VectorXd v, int size, ostream &out);
+    void readVector(VectorXd& w, int size, istream& fin);
 };
 
 #endif /* LSTM_H_ */

@@ -41,7 +41,8 @@ SOURCES += main.cpp \
     backwardlayerlstm.cpp \
     imageshandler.cpp \
     inputdata.cpp \
-    testEigenLib.cpp
+    testEigenLib.cpp \
+    decodinglayer.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
@@ -58,7 +59,8 @@ HEADERS += \
     backwardlayerlstm.h \
     imageshandler.h \
     inputdata.h \
-    log.h
+    log.h \
+    decodinglayer.h
 
 QMAKE_CXXFLAGS += -std=c++0x
 

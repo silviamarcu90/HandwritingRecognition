@@ -11,9 +11,43 @@
 #include "ctclayer.h"
 #include "neuralnetwork.h"
 #include "imageshandler.h"
+#include "decodinglayer.h"
 
 using namespace cv;
 using namespace Eigen;
+
+void testRecoveredNet() {
+
+    //test network - recovery constructor
+    ImagesHandler im_handler;
+    vector<string> validationset = im_handler.getDataSet("validationset1.txt");
+    NeuralNetwork net("NETWORK_WEIGHTS");
+    cout << "*********************************************************\n";
+    net.evaluateValidationSet(validationset, im_handler);
+    cout << "Validation error" << net.outputLayer.validationError << "\n";
+
+}
+
+void testDecoding() {
+
+    //use network-recovery constructor
+    ImagesHandler im_handler;
+    vector<string> trainset = im_handler.getDataSet("trainset.txt");
+    vector<string> validationset = im_handler.getDataSet("validationset1.txt");
+    NeuralNetwork net("NETWORK_WEIGHTS");
+
+    cout << "*TEST*********************************************************\n";
+    net.testInputImage(trainset[0], im_handler);
+
+    DecodingLayer decodingLayer(net.outputLayer.y,
+                                "/home/silvia/HandwritingRecognition/corpus/dictionary",
+                                net.outputLayer.alphabet);
+    decodingLayer.init();
+    vector<string> decodedLabels = decodingLayer.getDecodedLabels();
+    cout << "Decoded labels for last word in the validation set: \n";
+    for(int i = 0; i < decodedLabels.size(); ++i)
+        cout << decodedLabels[i] << "\n";
+}
 
 int main()
 {
@@ -44,8 +78,14 @@ int main()
 //    CTCLayer ctc(53, 5);
 
 /***********************************************************************/
-    NeuralNetwork net(10, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
-    net.trainNetwork();
+//    NeuralNetwork net(10, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
+//    net.trainNetwork();
+
+    //test DecodingLayer
+//    MatrixXd y(10, 79);
+//    DecodingLayer dec(y, "/home/silvia/HandwritingRecognition/corpus/dictionary");
+//    dec.init();
+    testDecoding();
 
 //    ImagesHandler im_handler("../words");
 //    im_handler.readTargets();

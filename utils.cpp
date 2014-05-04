@@ -41,3 +41,9 @@ double h_derived(double x) {
 double g_derived(double x) {
     return tanh_derived(x);
 }
+
+void updateOneWeight(double ETA, double &w, double &delta_w, double gradient) {
+
+    delta_w = MIU*delta_w - ETA*(1-MIU)*gradient;
+    w += delta_w;
+}

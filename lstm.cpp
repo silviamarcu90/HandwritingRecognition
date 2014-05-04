@@ -17,8 +17,20 @@ LSTM::LSTM(int inputUnitsNum, int hiddenUnitsNum) {
     std::normal_distribution<double> distrib (0.0, 0.1);
     distribution = distrib;
     generator = g;
+    if(DEBUG)
+        cout << "Constructor LSTM\n";
     initWeights();
+    initDeltaWeights();
 }
+
+LSTM::LSTM(int inputUnitsNum, int hiddenUnitsNum, istream& fin) {
+    this->I= inputUnitsNum;
+    this->H = hiddenUnitsNum;
+    this->C = 1;
+    readWeights(fin);
+    initDeltaWeights();
+}
+
 
 LSTM::~LSTM() {
     // TODO Auto-generated destructor stub
@@ -26,38 +38,76 @@ LSTM::~LSTM() {
 
 void LSTM::initWeights() {
 
-    w_iig = initRandomVector(I);
-    w_ifg = initRandomVector(I);
+    w_iig = initRandomVector(I); //cout << "W_IIG " << w_iig(0) << "\n";
+    w_ifg = initRandomVector(I); //VectorXd::Zero(I);
     w_iog = initRandomVector(I);
 
+    //recurrent connections
     w_hig = initRandomVector(H);
     w_hfg = initRandomVector(H);
-    w_hog = initRandomVector(H);
+    w_hog = initRandomVector(H); //correct!
 
-    w_cig = initRandomVector(C);
+    //peephole connections (between cells inside an LSTM
+    w_cig = initRandomVector(C); //VectorXd::Zero(C);
     w_cfg = initRandomVector(C);
-    w_cog = initRandomVector(C);
+    w_cog = initRandomVector(C); //correct!
 
     w_ic = initRandomVector(I);
-    w_hc = initRandomVector(H);
+    w_hc = initRandomVector(H); //
+}
+
+void LSTM::readWeights(istream &fin) {
+    readVector(w_iig, I, fin);
+    readVector(w_ifg, I, fin);
+    readVector(w_iog, I, fin);
+
+    readVector(w_hig, H, fin);
+    readVector(w_hfg, H, fin);
+    readVector(w_hog, H, fin);
+
+    readVector(w_cig, C, fin);
+    readVector(w_cfg, C, fin);
+    readVector(w_cog, C, fin);
+
+    readVector(w_ic, I, fin);
+    readVector(w_hc, H, fin);
+}
+
+
+void LSTM::printWeights(ostream &out) {
+    printVector(w_iig, I, out);
+    printVector(w_ifg, I, out);
+    printVector(w_iog, I, out);
+
+    printVector(w_hig, H, out);
+    printVector(w_hfg, H, out);
+    printVector(w_hog, H, out);
+
+    printVector(w_cig, C, out);
+    printVector(w_cfg, C, out);
+    printVector(w_cog, C, out);
+
+    printVector(w_ic, I, out);
+    printVector(w_hc, H, out);
 }
 
 void LSTM::initDeltaWeights() {
 
-    delta_w_iig = initRandomVector(I);
-    delta_w_ifg = initRandomVector(I);
-    delta_w_iog = initRandomVector(I);
+    delta_w_iig = VectorXd::Zero(I);
+    delta_w_ifg = VectorXd::Zero(I);
+    delta_w_iog = VectorXd::Zero(I);
 
-    delta_w_hig = initRandomVector(H);
-    delta_w_hfg = initRandomVector(H);
-    delta_w_hog = initRandomVector(H);
+    delta_w_hig = VectorXd::Zero(H);
+    delta_w_hfg = VectorXd::Zero(H);
+    delta_w_hog = VectorXd::Zero(H);
 
-    delta_w_cig = initRandomVector(C);
-    delta_w_cfg = initRandomVector(C);
-    delta_w_cog = initRandomVector(C);
+    delta_w_cig = VectorXd::Zero(C);
+    delta_w_cfg = VectorXd::Zero(C);
+    delta_w_cog = VectorXd::Zero(C);
 
-    delta_w_ic = initRandomVector(I);
-    delta_w_hc = initRandomVector(H);
+    delta_w_ic = VectorXd::Zero(I);
+    delta_w_hc = VectorXd::Zero(H);
+
 }
 
 void LSTM::startNewForwardPass(VectorXd x, VectorXd p_b, VectorXd p_sc)
@@ -92,9 +142,6 @@ double LSTM::forwardPassCell() {
     return w_ic.dot(x_t) + w_hc.dot(prev_b);
 }
 
-//void  LSTM::backwardPassCellOutput(vector<MatrixXd> eps_c1) {
-
-//}
 
 VectorXd LSTM::initRandomVector(int size) {
     VectorXd w;
@@ -108,3 +155,17 @@ VectorXd LSTM::initRandomVector(int size) {
     return w;
 }
 
+void LSTM::printVector(VectorXd w, int size, ostream& out) {
+    for (int i = 0; i < size; ++i) {
+        out << w[i] << " ";
+    }
+    out << "\n";
+
+}
+
+void LSTM::readVector(VectorXd& w, int size, istream& fin) {
+    w = VectorXd::Zero(size);
+    for (int i = 0; i < size; ++i) {
+        fin >> w[i];
+    }
+}

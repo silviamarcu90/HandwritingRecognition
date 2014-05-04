@@ -4,7 +4,19 @@ CTCLayer::CTCLayer(int K, int H) {
     this->H = H;
     this->K = K;
 
-    initWeights(); /// init w variable (vector with 2 matrices: one for the forward-hidden layer, one for the backward-hidden)
+    /// init w variable (vector with 2 matrices: one for the forward-hidden layer, one for the backward-hidden)
+    initWeights();
+
+    initAlphabet();
+}
+
+CTCLayer::CTCLayer(int K, int H, istream& fin) {
+    this->H = H;
+    this->K = K;
+
+    /// init w variable (vector with 2 matrices: one for the forward-hidden layer, one for the backward-hidden)
+    initWeights();
+    readWeights(fin);
 
     initAlphabet();
 }
@@ -26,6 +38,21 @@ void CTCLayer::initActivations() {
 
     delta_k = MatrixXd::Zero(T, K);
 
+}
+
+void CTCLayer::readWeights(istream& fin) {
+
+    for(int i = 0; i < 2; ++i)
+        readMatrix(w[i], fin);
+
+}
+
+void CTCLayer::printWeights(ostream& out) {
+    for(int i = 0; i < 2; ++i)
+    {
+        printMatrix(w[i], out);
+        out << std::endl;
+    }
 }
 
 /**
@@ -163,27 +190,31 @@ vector<MatrixXd> CTCLayer::getEpsilonCTC() {
 }
 
 void CTCLayer::updateWeights(double ETA) {
-    MatrixXd delta_w_forward = MatrixXd::Zero(K, H);
-    MatrixXd delta_w_backward = MatrixXd::Zero(K, H);
+    MatrixXd deriv_w_forward = MatrixXd::Zero(K, H);
+    MatrixXd deriv_w_backward = MatrixXd::Zero(K, H);
 
     for(int t = 0; t < T; ++t) {
         for(int k = 0; k < K; ++k) {
             for(int h = 0; h < H; ++h)
             {
-                delta_w_forward.coeffRef(k, h) += delta_k(t, k)*forward_b[t](h);
-                delta_w_backward.coeffRef(k, h) += delta_k(t, k)*backward_b[t](h);
+                deriv_w_forward.coeffRef(k, h) += delta_k(t, k)*forward_b[t](h);
+                deriv_w_backward.coeffRef(k, h) += delta_k(t, k)*backward_b[t](h);
             }
         }
     }
 
     //DEBUG gradient
-//    cout << "-----------------gradient is : " << delta_w_forward(1, 4) << "\n";
+//    cout << "-----------------gradient is : " << deriv_w_forward(0, 0) << "\n";
 
     for(int k = 0; k < K; ++k) {
         for(int h = 0; h < H; ++h) {
 //            cout << delta_w_forward(k, h) << " "; //sometimes I get too big values!!: eg. 63
-            w[0].coeffRef(k, h) -= ETA*delta_w_forward(k, h);
-            w[1].coeffRef(k, h) -= ETA*delta_w_backward(k, h);
+            updateOneWeight(ETA,  w[0](k, h), delta_w[0](k, h), deriv_w_forward(k, h));
+            updateOneWeight(ETA,  w[1](k, h), delta_w[1](k, h), deriv_w_backward(k, h));
+
+//            w[0].coeffRef(k, h) -= ETA*deriv_w_forward(k, h);
+//            w[1].coeffRef(k, h) -= ETA*deriv_w_backward(k, h);
+
 //            cout << "w[0] " << w[0](k, h) << " ";
 //            cout << "w[1] " << w[1](k, h) << " ";
         }
@@ -313,6 +344,26 @@ void CTCLayer::initWeights() {
     {
         MatrixXd m = initRandomMatrix(K, H);
         w.push_back(m);
+        delta_w.push_back(MatrixXd::Zero(K, H));
+    }
+}
+
+void CTCLayer::printMatrix(MatrixXd m, ostream &out) {
+
+    for(int i = 0; i < K; ++i)
+    {
+        for(int j = 0; j < H; ++j)
+            out << m(i, j) << " ";
+        out << "\n";
+    }
+}
+
+void CTCLayer::readMatrix(MatrixXd& m, istream &fin) {
+    m = MatrixXd::Zero(K, H);
+    for(int i = 0; i < K; ++i)
+    {
+        for(int j = 0; j < H; ++j)
+            fin >> m(i, j);
     }
 }
 

@@ -37,21 +37,23 @@ public: vector<LSTM> hiddenLayerNodes;
         MatrixXd delta_c; /// for the cell
         MatrixXd delta_f; /// for the forget gate
         MatrixXd delta_i; /// for the input gate
-
-        void updateWeightsOfCellInputGate(int c);
-        void updateWeightsOfCellForgetGate(int c);
-        void updateWeightsOfCellOutputGate(int c);
-        void updateWeightsOfCellState(int c);
+protected:
+        virtual void updateWeightsOfCellInputGate(int c);
+        virtual void updateWeightsOfCellForgetGate(int c);
+        virtual void updateWeightsOfCellOutputGate(int c);
+        virtual void updateWeightsOfCellState(int c);
         void initActivationsAndDelta(vector< VectorXd > input);
 
 public:
 
     BLSTM() {}
     BLSTM(int hiddenUnitsNum);
+    BLSTM(int hiddenUnitsNum, istream &fin);
     virtual ~BLSTM();
     virtual void forwardPass(vector< VectorXd > input);
     virtual void backwardPass(MatrixXd eps_c1);
-    void updateWeights(double ETA);
+    virtual void updateWeights(double ETA);
+    void printWeights(ostream& out);
 
     vector<VectorXd> reserve(int s1, int s2);
 

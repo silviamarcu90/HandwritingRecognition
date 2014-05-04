@@ -21,7 +21,10 @@ class CTCLayer {
     int K; /// number of output units
     int T; /// input sequence length
     string l, l_prime;
-public: vector< MatrixXd > w; /// weights for the computation of the output units: T x H x K
+
+public:
+    vector< MatrixXd > w; /// weights for the computation of the output units: T x H x K
+    vector< MatrixXd > delta_w;
     MatrixXd a, y; /// activations and softmax function results: T x K
     MatrixXd alpha, beta; /// forward/backward variables: T x K
     MatrixXd delta_k; /// residual variables of the CTC layer: T x K
@@ -35,6 +38,7 @@ public:
     double validationError; /// validation error
     CTCLayer();
     CTCLayer(int K, int H);
+    CTCLayer(int K, int H, istream& fin);
     virtual ~CTCLayer();
     void forwardPass(int T, string label, vector<VectorXd> forward_b, vector<VectorXd> backward_b);
     void backwardPass();
@@ -44,6 +48,8 @@ public:
     vector<MatrixXd> getEpsilonCTC();
     double computeObjectiveFunction();
     double computeError();
+    void readWeights(istream& fin);
+    void printWeights(ostream &out);
 private:
     void initWeights();
     void initActivations();
@@ -55,6 +61,8 @@ private:
     double f_u(int u);
     double g_u(int u);
     double computeProbability(int k, int t);
+    void readMatrix(MatrixXd& m, istream &fin);
+    void printMatrix(MatrixXd m, ostream &out);
 
 };
 
