@@ -37,14 +37,14 @@ void testDecoding() {
     NeuralNetwork net("NETWORK_WEIGHTS");
 
     cout << "*TEST*********************************************************\n";
-    net.testInputImage(trainset[0], im_handler);
+    net.testInputImage(trainset[0], im_handler); //do forward pass through the network for an input example
 
     DecodingLayer decodingLayer(net.outputLayer.y,
                                 "/home/silvia/HandwritingRecognition/corpus/dictionary",
                                 net.outputLayer.alphabet);
     decodingLayer.init();
     vector<string> decodedLabels = decodingLayer.getDecodedLabels();
-    cout << "Decoded labels for last word in the validation set: \n";
+    cout << "Decoded labels for word:" << trainset[0] << "\n";
     for(int i = 0; i < decodedLabels.size(); ++i)
         cout << decodedLabels[i] << "\n";
 }
@@ -67,11 +67,14 @@ int main()
 //    std::cout << "random number" << distribution(generator) << "\n";
 
 //////////////////////////////////////////
-//    FeatureExtractor extractor(image);
-//    vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
-//    for(unsigned int i = 0; i < 9; ++i)
-//        std::cout << sequenceOfFeatures[5][i] << " ";
-//    std::cout << "\n";
+    FeatureExtractor extractor(image);
+    vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
+    for(uint k = 0; k < sequenceOfFeatures.size(); ++k)
+    {
+        for(unsigned int i = 0; i < NB_FEATURES; ++i)
+            std::cout << sequenceOfFeatures[k][i] << " ";
+        std::cout << "\n";
+    }
 //    std::cout << "sequenceSize [T] = " << sequenceOfFeatures.size() << "\n";
 //    BLSTM blstm(5, sequenceOfFeatures);
 //    blstm.forwardPass();
@@ -81,11 +84,14 @@ int main()
 //    NeuralNetwork net(10, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
 //    net.trainNetwork();
 
+//    NeuralNetwork net("NETWORK_WEIGHTS");
+//    net.trainNetwork();
+
     //test DecodingLayer
 //    MatrixXd y(10, 79);
 //    DecodingLayer dec(y, "/home/silvia/HandwritingRecognition/corpus/dictionary");
 //    dec.init();
-    testDecoding();
+//    testDecoding();
 
 //    ImagesHandler im_handler("../words");
 //    im_handler.readTargets();

@@ -25,7 +25,7 @@ public:
     ofstream out;
 
     NeuralNetwork(int hiddenUnitsNum, int outputUnitsNum) :
-        I(9),
+        I(NB_FEATURES),
         H(hiddenUnitsNum),
         K(outputUnitsNum),
         ETA(0.01),

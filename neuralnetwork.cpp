@@ -2,6 +2,7 @@
 
 void NeuralNetwork::trainNetwork() {
 
+    int offset = 10*2;
     int nbExamples;
     ImagesHandler im_handler;
     vector<string> trainset = im_handler.getDataSet("trainset.txt");
@@ -26,7 +27,7 @@ void NeuralNetwork::trainNetwork() {
 
         outputLayer.trainError = 0.0; // the training error
         outputLayer.validationError = 0.0;
-        for(int eg = 0; eg < nbExamples; ++ eg)
+        for(int eg = offset; eg < offset + nbExamples && eg < trainset.size(); ++ eg)
         {
             string imagePath(trainset[eg]);
             FeatureExtractor extractor(imagePath);
@@ -175,15 +176,16 @@ void NeuralNetwork::trainOneExampleDebug(vector<VectorXd> x, string label) {
 void NeuralNetwork::evaluateValidationSet(vector<string> validationset, ImagesHandler im_handler) {
 
     cout << "VALIDATE!\n";
-    int setSize = 9;///validationset.size();
+    int setSize = 10;///validationset.size();
+    int offset = 10;//setSize;
 
-    for(int i = 0; i < setSize; ++ i)
+    for(int i = offset; i < offset + setSize; ++ i)
     {
         string imagePath(validationset[i]);
         FeatureExtractor extractor(imagePath);
         vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
         string label = im_handler.getTargetLabel(imagePath);
-        cout << imagePath << "; label =" << label << "=" << endl;
+//        cout << imagePath << "; label =" << label << "=" << endl;
         inputs = sequenceOfFeatures;
 
         /// forward pass
@@ -207,7 +209,7 @@ void NeuralNetwork::testInputImage(string imagePath, ImagesHandler im_handler) {
     FeatureExtractor extractor(imagePath);
     vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
     string label = im_handler.getTargetLabel(imagePath);
-    cout << imagePath << "; label =" << label << "=" << endl;
+//    cout << imagePath << "; label =" << label << "=" << endl;
     inputs = sequenceOfFeatures;
 
     /// forward pass

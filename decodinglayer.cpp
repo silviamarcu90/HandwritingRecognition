@@ -145,32 +145,6 @@ token DecodingLayer::getHighestScoreOutputToken(int t) {
     return result;
 }
 
-//!!! just for testing -- TODO: use the alphabet from the ctclayer as a parameter! (like y)
-void DecodingLayer::initAlphabet() {
-    int k = 0;
-
-    for(int i = 97; i <= 122; ++i, k++) //small letters
-        alphabet.insert( pair<char,int>((char)i, k) );
-
-    for(int i = 65; i <= 90; ++i, k++) //capital letters
-        alphabet.insert( pair<char,int>((char)i, k) );
-
-    for(int i = 40; i <= 63; ++i, k++) //capital letters
-        alphabet.insert( pair<char,int>((char)i, k) );
-
-    alphabet.insert( pair<char,int>('?', k) ); k++;
-
-    alphabet.insert( pair<char,int>('"', k) ); k++;
-
-    alphabet.insert( pair<char,int>(' ', k) ); k++; //white-space
-
-    map<char,int>::iterator it;
-
-//    if(DEBUG)
-//        for (it=alphabet.begin(); it!=alphabet.end(); ++it)
-//           cout << it->first << " => " << it->second << '\n';
-}
-
 string DecodingLayer::createExtendedLabel(string l) {
     string l_prime = " ";
     for(int i = 0; i < l.size(); ++i)

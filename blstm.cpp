@@ -13,7 +13,7 @@
 
 BLSTM::BLSTM(int hiddenUnitsNum) {
     H = hiddenUnitsNum;
-    this->I = 9; //9 features for the input layer
+    this->I = NB_FEATURES; //9 features for the input layer
     for(int i = 0; i < H; ++i)
     {
         LSTM unit(I, H);
@@ -24,7 +24,7 @@ BLSTM::BLSTM(int hiddenUnitsNum) {
 
 BLSTM::BLSTM(int hiddenUnitsNum, istream& fin) {
     H = hiddenUnitsNum;
-    this->I = 9; //9 features for the input layer
+    this->I = NB_FEATURES; //9 features for the input layer
     for(int i = 0; i < H; ++i)
     {
         LSTM unit(I, H, fin);

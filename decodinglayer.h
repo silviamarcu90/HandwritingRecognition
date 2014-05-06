@@ -37,16 +37,8 @@ class DecodingLayer
     map<char, int> alphabet;
     void initDictionary(string dictionaryPath);
     word initTokensWord(string dictWord);
-    void initAlphabet();
     string createExtendedLabel(string l);
 public:
-    DecodingLayer(MatrixXd y1, string dictionaryPath) : y(y1) {
-        initDictionary(dictionaryPath);
-        initAlphabet();
-        K = y.cols();
-        T = y.rows();
-
-    }
 
     DecodingLayer(MatrixXd y1, string dictionaryPath, map<char, int> alphabet1) :
         y(y1), alphabet(alphabet1)

@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <math.h>
+#define NB_FEATURES 9
 #define DEBUG 0
 #define DEBUG_GRADIENT 1
 #define MIU 0.9

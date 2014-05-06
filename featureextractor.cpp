@@ -48,10 +48,12 @@ vector< VectorXd > FeatureExtractor::normalizeFeatures(vector< VectorXd > featur
 
     //1. compute mean
     for(int i = 0; i < T; ++i)
-        mean += featuresSeq[i];
+        mean += featuresSeq[i]; //element-wise operation
 
     for(int i = 0; i < numFeatures; ++i)
+    {
         mean(i) /= T;
+    }
 
     //2. compute standard deviation
     for(int i = 0; i < T; ++i) {
@@ -69,9 +71,7 @@ vector< VectorXd > FeatureExtractor::normalizeFeatures(vector< VectorXd > featur
             featuresSeq[i](j) = (featuresSeq[i](j) - mean(j));
             if(std_dev(j) != 0)
                 featuresSeq[i](j) /= std_dev(j);
-//            cout << featuresSeq[i](j) << " ";
         }
-//        cout << "\n";
     }
 
     return featuresSeq;
@@ -103,9 +103,10 @@ vector<double> FeatureExtractor::computeFeaturesPerWindow(int winNb)
     for(int i = 0; i < rows; ++i)
     {
         int pixelVal = (int)input[i*imgStep + j]/255;
-        f1 += pixelVal;
-        f2 += i*pixelVal;
-        f3 += i*i*pixelVal;
+        int blackPixel = 1 - pixelVal; //revert the black pixels -- to be 1
+        f1 += blackPixel; //count black pixels
+        f2 += i*blackPixel;
+        f3 += i*i*blackPixel;
     }
     f1 /= rows;
     f2 /= rows;
