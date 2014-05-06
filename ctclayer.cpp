@@ -209,8 +209,8 @@ void CTCLayer::updateWeights(double ETA) {
     for(int k = 0; k < K; ++k) {
         for(int h = 0; h < H; ++h) {
 //            cout << delta_w_forward(k, h) << " "; //sometimes I get too big values!!: eg. 63
-            updateOneWeight(ETA,  w[0](k, h), delta_w[0](k, h), deriv_w_forward(k, h));
-            updateOneWeight(ETA,  w[1](k, h), delta_w[1](k, h), deriv_w_backward(k, h));
+//            updateOneWeight(ETA,  w[0](k, h), delta_w[0](k, h), deriv_w_forward(k, h));
+//            updateOneWeight(ETA,  w[1](k, h), delta_w[1](k, h), deriv_w_backward(k, h));
 
 //            w[0].coeffRef(k, h) -= ETA*deriv_w_forward(k, h);
 //            w[1].coeffRef(k, h) -= ETA*deriv_w_backward(k, h);

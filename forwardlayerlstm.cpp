@@ -131,10 +131,10 @@ void ForwardLayerLSTM::updateWeights(double eta) {
     ETA = eta;
     //for each cell in the hidden layer
     for(c = 0; c < H; ++c) {
-        updateWeightsOfCellInputGate(c);
-        updateWeightsOfCellForgetGate(c);
-        updateWeightsOfCellOutputGate(c);
-        updateWeightsOfCellState(c);
+//        updateWeightsOfCellInputGate(c);
+//        updateWeightsOfCellForgetGate(c);
+//        updateWeightsOfCellOutputGate(c);
+//        updateWeightsOfCellState(c);
     }
 
 }

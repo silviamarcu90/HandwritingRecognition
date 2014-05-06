@@ -115,6 +115,7 @@ vector<double> FeatureExtractor::computeFeaturesPerWindow(int winNb)
     //DEBUG
     featuresVec.push_back(f1);
     featuresVec.push_back(f2);
+    return featuresVec;
     featuresVec.push_back(f3);
 
     int uppermost = 0, lowermost = rows - 1;

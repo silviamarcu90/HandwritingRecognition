@@ -124,9 +124,9 @@ void BackwardLayerLSTM::updateWeights(double eta) {
     ETA = eta;
     //for each cell in the hidden layer
     for(c = 0; c < H; ++c) {
-        updateWeightsOfCellInputGate(c);
-        updateWeightsOfCellForgetGate(c);
-        updateWeightsOfCellOutputGate(c);
+//        updateWeightsOfCellInputGate(c);
+//        updateWeightsOfCellForgetGate(c);
+//        updateWeightsOfCellOutputGate(c);
         updateWeightsOfCellState(c);
     }
 
@@ -140,13 +140,13 @@ void BackwardLayerLSTM::updateWeightsOfCellState(int c) { //for a hidden memory 
         for(int t = 0; t < T; ++t) {
             gradient_i += delta_c(t, c)*x[t](i);
         }
-//        if(c == 0 && i == 0) cout << "GRADIENT " << gradient_i << "\n";
-        updateOneWeight(ETA, hiddenLayerNodes[c].w_ic(i), hiddenLayerNodes[c].delta_w_ic(i), gradient_i);
+        if(c == 0 && i == 0) cout << "GRADIENT " << gradient_i << "\n";
+//        updateOneWeight(ETA, hiddenLayerNodes[c].w_ic(i), hiddenLayerNodes[c].delta_w_ic(i), gradient_i);
 //        hiddenLayerNodes[c].delta_w_ic(i) *= MIU;
 //        hiddenLayerNodes[c].delta_w_ic(i) += -ETA*(1-MIU)*gradient_i;
 //        hiddenLayerNodes[c].w_ic(i) += hiddenLayerNodes[c].delta_w_ic(i);
     }
-
+return;
     for(int i = 0; i < H; ++i) {
         double gradient_h = 0; //the gradient of the hidden_units-input_gate weights
         for(int t = 0; t < T-1; ++t) {
@@ -170,8 +170,6 @@ void BackwardLayerLSTM::updateWeightsOfCellInputGate(int c) {
         }
 //        if(c == 0 && i == 0) cout << "GRADIENT backpropagation " << gradient_i << "\n";
 
-//        if(c == 2 && i == 1)
-//            cout << "***gradient is: " << gradient_i << "\n";
         updateOneWeight(ETA, hiddenLayerNodes[c].w_iig(i), hiddenLayerNodes[c].delta_w_iig(i), gradient_i);
 
 //        cout << "w_iig " << hiddenLayerNodes[c].w_iig(i) << " ";

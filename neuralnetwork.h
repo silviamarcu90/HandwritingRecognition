@@ -79,6 +79,7 @@ public:
     }
 
     void trainNetwork();
+    void trainNetworkDebug(string imagePath);
 
     void trainOneExample(vector<VectorXd> x, string label);
     void trainOneExampleDebug(vector<VectorXd> x, string label);

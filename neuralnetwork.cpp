@@ -69,6 +69,49 @@ void NeuralNetwork::trainNetwork() {
 
 }
 
+void NeuralNetwork::trainNetworkDebug(string imagePath) {
+
+    int nbExamples;
+    ImagesHandler im_handler;
+//    vector<string> trainset = im_handler.getDataSet("trainset.txt");
+//    vector<string> validationset = im_handler.getDataSet("validationset1.txt");
+    nbExamples = 10;//trainset.size();
+
+//    cout << "trainset_size: " << trainset.size() << "\n";
+//    cout << "validationset_size: " << validationset.size() << "\n";
+
+//    out.open("trainErrors10Eg_10Iter10LSTM.01ETA+MIU+Valid.txt");
+
+//    if (!out.is_open())
+//    {
+//        cout << "Failed to open file...\n";
+//        return;
+//    }
+
+    //in a loop -- train the weights until a stop condition is fullfilled
+    for(int epoch = 0; epoch < 1; ++ epoch)
+    {
+
+        outputLayer.trainError = 0.0; // the training error
+        outputLayer.validationError = 0.0;
+//        for(int eg = offset; eg < offset + nbExamples && eg < trainset.size(); ++eg)
+//        {
+//            string imagePath(trainset[eg]);
+            FeatureExtractor extractor(imagePath);
+            vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
+            string label = im_handler.getTargetLabel(imagePath);
+            cout << imagePath << "; label =" << label << "=" << endl;
+//            trainOneExample( sequenceOfFeatures, label );
+            trainOneExampleDebug( sequenceOfFeatures, label );
+//        }
+        outputLayer.trainError /= nbExamples;
+        cout << "ctcError: " << outputLayer.trainError << "\n";
+        cout << "*********************************************************\n";
+
+    }
+
+}
+
 void NeuralNetwork::trainOneExample(vector<VectorXd> x, string label) {
 
     inputs = x;
@@ -129,44 +172,44 @@ void NeuralNetwork::trainOneExampleDebug(vector<VectorXd> x, string label) {
     /// update weights
     outputLayer.updateWeights(ETA);
 //    forwardHiddenLayer.updateWeights(ETA);
-//    backwardHiddenLayer.updateWeights(ETA);
+    backwardHiddenLayer.updateWeights(ETA);
 
 
 //    cout << "AFTER passing -- one example\n";
 //    cout << "#############################################################\n";
 
 
-    cout << "w[0](1,1) = " << outputLayer.w[0](i,j) << "\n";
-    outputLayer.w[0](i, j) += epsilon;
-    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
-    outputLayer.backwardPass();
-    double Oplus = -outputLayer.computeObjectiveFunction();
-    cout << "w[0](1,1) = " << outputLayer.w[0](i,j) << "\n";
-
-    outputLayer.w[0](i, j) -= 2*epsilon; //because I need to subtract the previous addition
-    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
-    outputLayer.backwardPass();
-    double Ominus = -outputLayer.computeObjectiveFunction();
-    cout << "w[0](1,1) = " << outputLayer.w[0](i, j) << "\n";
-    cout << "finite diff: " << (Oplus - Ominus)/(2*epsilon) << "\n";
-
-//    cout << "[NN] before:w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) << "\n";
-//    backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) += epsilon;
-//    forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
-//    backwardHiddenLayer.forwardPass(inputs);
+//    cout << "w[0](1,1) = " << outputLayer.w[0](i,j) << "\n";
+//    outputLayer.w[0](i, j) += epsilon;
 //    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
 //    outputLayer.backwardPass();
 //    double Oplus = -outputLayer.computeObjectiveFunction();
-//    cout << "[NN]w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) << "\n";
+//    cout << "w[0](1,1) = " << outputLayer.w[0](i,j) << "\n";
 
-//    backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) -= 2*epsilon; //because I need to subtract the previous addition
-//    forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
-//    backwardHiddenLayer.forwardPass(inputs);
+//    outputLayer.w[0](i, j) -= 2*epsilon; //because I need to subtract the previous addition
 //    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
 //    outputLayer.backwardPass();
 //    double Ominus = -outputLayer.computeObjectiveFunction();
-//    cout << "[NN]w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) << "\n";
+//    cout << "w[0](1,1) = " << outputLayer.w[0](i, j) << "\n";
 //    cout << "finite diff: " << (Oplus - Ominus)/(2*epsilon) << "\n";
+
+//    cout << "[NN] before:w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) << "\n";
+    backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) += epsilon;
+    forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
+    backwardHiddenLayer.forwardPass(inputs);
+    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
+    outputLayer.backwardPass();
+    double Oplus = -outputLayer.computeObjectiveFunction();
+//    cout << "[NN]w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) << "\n";
+
+    backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) -= 2*epsilon; //because I need to subtract the previous addition
+    forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
+    backwardHiddenLayer.forwardPass(inputs);
+    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
+    outputLayer.backwardPass();
+    double Ominus = -outputLayer.computeObjectiveFunction();
+//    cout << "[NN]w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) << "\n";
+    cout << "finite diff: " << (Oplus - Ominus)/(2*epsilon) << "\n";
 
 }
 

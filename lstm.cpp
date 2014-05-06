@@ -38,22 +38,22 @@ LSTM::~LSTM() {
 
 void LSTM::initWeights() {
 
-    w_iig = initRandomVector(I); //cout << "W_IIG " << w_iig(0) << "\n";
-    w_ifg = initRandomVector(I); //VectorXd::Zero(I);
-    w_iog = initRandomVector(I);
+    w_iig = VectorXd::Zero(I);//initRandomVector(I); //cout << "W_IIG " << w_iig(0) << "\n";
+    w_ifg = VectorXd::Zero(I);//initRandomVector(I); //VectorXd::Zero(I);
+    w_iog = VectorXd::Zero(I);//initRandomVector(I);
 
     //recurrent connections
-    w_hig = initRandomVector(H);
-    w_hfg = initRandomVector(H);
-    w_hog = initRandomVector(H); //correct!
+    w_hig = VectorXd::Zero(H);//initRandomVector(H);
+    w_hfg = VectorXd::Zero(H);//initRandomVector(H);
+    w_hog = VectorXd::Zero(H);//initRandomVector(H); //correct!
 
     //peephole connections (between cells inside an LSTM
-    w_cig = initRandomVector(C); //VectorXd::Zero(C);
-    w_cfg = initRandomVector(C);
-    w_cog = initRandomVector(C); //correct!
+    w_cig = VectorXd::Zero(C);//initRandomVector(C);
+    w_cfg = VectorXd::Zero(C);//initRandomVector(C);
+    w_cog = VectorXd::Zero(C);//initRandomVector(C); //correct!
 
     w_ic = initRandomVector(I);
-    w_hc = initRandomVector(H); //
+    w_hc = VectorXd::Zero(H);//initRandomVector(H); //
 }
 
 void LSTM::readWeights(istream &fin) {

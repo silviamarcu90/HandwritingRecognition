@@ -117,8 +117,10 @@ vector<string> DecodingLayer::getDecodedLabels() {
 
     token maxTok = words[0].tok[1][T-1];
     string bestword = "";
+    //output the top 10 bestwords
     for(int i = 1; i < nbWords; ++i)
     {
+        cout << words[i].tok[1][T-1].history[0] << "\n";
         if(words[i].tok[1][T-1].score > maxTok.score)
         {
             bestword = words[i].label;
