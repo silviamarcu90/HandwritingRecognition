@@ -83,6 +83,7 @@ public:
 
     void trainOneExample(vector<VectorXd> x, string label);
     void trainOneExampleDebug(vector<VectorXd> x, string label);
+    void trainOneExampleWithPrints(vector<VectorXd> x, string label);
 
     void evaluateValidationSet(vector<string> validationset, ImagesHandler im_handler);
 

@@ -21,7 +21,7 @@ double sigmoid(double x) {
 
 double hyperbolicTangent(double x) {
     if(x >= 0) return (1 - exp(-2*x))/(1 + exp(-2*x)); //avoid overflow
-    else return exp(2*x)-1/(exp(2*x) + 1);
+    else return (exp(2*x)-1)/(exp(2*x) + 1); //correct!
 }
 
 double f_derived(double x) {

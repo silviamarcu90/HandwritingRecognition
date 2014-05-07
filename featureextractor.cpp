@@ -71,7 +71,9 @@ vector< VectorXd > FeatureExtractor::normalizeFeatures(vector< VectorXd > featur
             featuresSeq[i](j) = (featuresSeq[i](j) - mean(j));
             if(std_dev(j) != 0)
                 featuresSeq[i](j) /= std_dev(j);
+//            cout << featuresSeq[i](j) << " ";
         }
+//        cout << "\n";
     }
 
     return featuresSeq;
@@ -115,7 +117,7 @@ vector<double> FeatureExtractor::computeFeaturesPerWindow(int winNb)
     //DEBUG
     featuresVec.push_back(f1);
     featuresVec.push_back(f2);
-    return featuresVec;
+//    return featuresVec; //to return just 2 features
     featuresVec.push_back(f3);
 
     int uppermost = 0, lowermost = rows - 1;

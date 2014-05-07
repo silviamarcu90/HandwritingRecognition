@@ -47,7 +47,15 @@ void testDecoding() {
 //    cout << "Decoded labels for word:" << trainset[0] << "\n";
     for(int i = 0; i < decodedLabels.size(); ++i)
         cout << decodedLabels[i] << "\n";
+
 }
+
+void debugSmallNetwork() {
+    string imagePath("../words/a01/a01-000u/a01-000u-03-01.png");
+    NeuralNetwork net(1, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
+    net.trainNetworkDebug(imagePath);
+}
+
 
 int main()
 {
@@ -82,17 +90,21 @@ int main()
 //    CTCLayer ctc(53, 5);
 
 /***********************************************************************/
-//    NeuralNetwork net(1, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
-//    net.trainNetworkDebug(imagePath);
+    NeuralNetwork net(50, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
+    net.trainNetworkDebug(imagePath);
 
 //    NeuralNetwork net("NETWORK_WEIGHTS");
 //    net.trainNetwork();
+
+    //DEBUG - small net
+//    debugSmallNetwork();
 
     //test DecodingLayer
 //    MatrixXd y(10, 79);
 //    DecodingLayer dec(y, "/home/silvia/HandwritingRecognition/corpus/dictionary");
 //    dec.init();
-    testDecoding();
+
+//    testDecoding();
 
 //    ImagesHandler im_handler("../words");
 //    im_handler.readTargets();

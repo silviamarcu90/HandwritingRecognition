@@ -58,6 +58,7 @@ public:
 
 private:
     VectorXd initRandomVector(int size);
+    VectorXd initConstantVector(int size, double ct);
     void printVector(VectorXd v, int size, ostream &out);
     void readVector(VectorXd& w, int size, istream& fin);
 };

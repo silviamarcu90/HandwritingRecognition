@@ -89,10 +89,10 @@ void BLSTM::updateWeightsOfCellState(int c) {}
 void BLSTM::updateWeights(double ETA) {}
 
 void BLSTM::print() {
-    cout << "for t = 10\n";
-//    for(int t = 0; t < T; ++t)
+    cout << "b_c[t](i): \n";
+    for(int t = 0; t < T; ++t)
     for(int i = 0; i < H; ++i)
-        cout << b_c[10](i) << " ";
+        cout << b_c[t](i) << " ";
     cout << "\n";
 }
 

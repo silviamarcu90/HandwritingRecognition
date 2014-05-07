@@ -79,7 +79,8 @@ void CTCLayer::forwardPass(int T, string label, vector<VectorXd> forward_b, vect
     //forward_b[t] -- is a vector with the outputs of the hidden layer - 1xH - at time _t_
     for(int t = 0; t < T; ++t) {
         VectorXd aux = w[0]*forward_b[t] + w[1]*backward_b[t];
-        a.row(t) = aux;//.transpose();//w[0]*forward_b[t] + w[1]*backward_b[t]; //a[t] is a vector of K
+        a.row(t) = aux;//a[t] is a vector of K
+//        cout << "a[" << t << "]" << ":\n";
 //        for(int k = 0; k < K; ++k)
 //            cout << a(t, k) << " ";
 //        cout << "\n";
@@ -94,9 +95,11 @@ void CTCLayer::forwardPass(int T, string label, vector<VectorXd> forward_b, vect
 //            sum += exp_a(t, k);
 //        eSum(t) = sum;
 //    }
+
     for(int t = 0; t < T; ++t) {
 //        double sum = safe_exp( eSum[t] );
         y.row(t) = exp_a.row(t)/eSum[t];
+//        cout << "y[" << t << "]" << ":\n";
 //        for(int k = 0; k < K; ++k)
 //            cout << y(t, k) << " ";
 //        cout << "\n";
@@ -114,20 +117,10 @@ void CTCLayer::backwardPass() {
     double logProbab = computeObjectiveFunction();
 
     //print the objective function: -ln(z|x)
-    if(DEBUG) cout << "negative logProbab is: " << -logProbab << "\n";
-//    for(int t = 0; t < T; ++t)
-//    {
-//    int t = T/2;
-//        double p = safe_log(0);
-//        for(int u = 0; u < l_prime.length(); ++u)
-//            p = log_add( p, log_multiply(alpha(t, u), beta(t, u)) );
-////        p = (p == 0) ? 1e-10 : p; /// to avoid 0 probabilities!!!!! SOLUTION?
-////        cond_probabs.push_back(p); // p(z|x) at time t
-//        cout << "+++++++ln(p) = " << p << "\n";
-//    }
-
+//    if(DEBUG) cout << "negative logProbab is: " << -logProbab << "\n";
 
     //compute residuals: delta_k(t, k)
+//    cout << "delta_k: \n";
     for(int t = 0; t < T; ++t) {
         for(int k = 0; k < K; ++k)
         {
@@ -146,16 +139,21 @@ void CTCLayer::backwardPass() {
 }
 
 /**
- * Compute the objective function L = - ln p(z|x) for the current input
+ * Compute the objective function L = ln p(z|x) for the current input (! need to be multiplied by -1)
  */
 double CTCLayer::computeObjectiveFunction() {
     int Uprime = l_prime.size();
 
     //compute p(z|x) for t = T-1 using only alpha
     int t = T - 1;
+
     double logProbab = log_add( alpha(t, Uprime-1), alpha(t, Uprime-2) ); //page 57, formula 7.4
+
+//    logProbab = log_divide(log_multiply(alpha(0, 0), beta(0, 0)), safe_log(y(0, 0) ) );//alpha(0, 0);
+//    for(t = 0; t < T; ++t)
 //    for(int u = 1; u < Uprime; ++u)
-//        logProbab = log_add( logProbab, alpha(t, u) );
+//        logProbab = log_add( logProbab, log_divide(log_multiply(alpha(t, u), beta(t, u)), safe_log(y(t, u) ) ) );
+//    cout << "second log probab: " << logProbab;
 
     return logProbab;
 }
@@ -176,13 +174,21 @@ double CTCLayer::computeError() {
  * *function used in the backward pass by the BLSTM cells
  */
 vector<MatrixXd> CTCLayer::getEpsilonCTC() {
-    MatrixXd eps_f(T, H), eps_b(T, H);
-    eps_c1.resize(0); //reset vector!
+    MatrixXd eps_f = MatrixXd::Zero(T, H), eps_b = MatrixXd::Zero(T, H);
+    eps_c1.resize(0); //reset vector! for a new example
+
     for(int t = 0; t < T; ++t)
     {
-        eps_f.row(t) = delta_k.row(t) * w[0]; //1xK * KxH
-        eps_b.row(t) = delta_k.row(t) * w[1];
+//        eps_f.row(t) = delta_k.row(t) * w[0]; //1xK * KxH  //!!different precision
+//        eps_b.row(t) = delta_k.row(t) * w[1];
+        for(int k = 0; k < K; ++k)
+            for(int h = 0; h < H; ++h) {
+                eps_f(t, h) += delta_k(t, k) * w[0](k, h);
+                eps_b(t, h) += delta_k(t, k) * w[1](k, h);
+           }
     }
+    cout << "eps_b(t=0, h=0) " << eps_b(0, 0) << "\n";
+
     eps_c1.push_back(eps_f); //for the forward layer
     eps_c1.push_back(eps_b); // for the backward layer
 
@@ -204,7 +210,7 @@ void CTCLayer::updateWeights(double ETA) {
     }
 
     //DEBUG gradient
-//    cout << "-----------------gradient is : " << deriv_w_forward(0, 0) << "\n";
+    cout << "-----------------gradient is : " << deriv_w_forward(0, 0) << "\n";
 
     for(int k = 0; k < K; ++k) {
         for(int h = 0; h < H; ++h) {
@@ -234,8 +240,10 @@ double CTCLayer::computeProbability(int k, int t) {
 
 //    if(c == 0) return probab;
     for(int u = 0; u < Uprime; ++u)
-        if(l_prime[u] == c)
-            probab = log_add( probab, log_multiply( alpha(t, u), beta(t, u) ));
+        if(l_prime[u] == c) {
+            probab = log_add( probab,  alpha(t, u)+beta(t, u) );
+        }
+
     return probab;
 }
 
@@ -277,7 +285,7 @@ void CTCLayer::computeForwardVariable() {
                     alpha(t, u) = log_add( alpha(t, u), alpha(t-1, i) );
 //                if(t == 1 && u == 1)
 //                    cout << "for letter: " << alphabet[l_prime[u]] << ": " << y(t, alphabet[l_prime[u]]);
-                alpha(t, u) += safe_log( y(t, alphabet[l_prime[u]]) );
+                alpha(t, u) += safe_log(y(t, alphabet[l_prime[u]]) );
 //            }
 //            cout << alpha(t, u) << " ";
         }
@@ -342,7 +350,8 @@ void CTCLayer::initWeights() {
     // 2 weights - matrices: one for the forwardHiddenLayer and the other for the backward
     for(int i = 0; i < 2; ++i)
     {
-        MatrixXd m = initRandomMatrix(K, H);
+        MatrixXd m = initRandomMatrix(K, H);//
+                    //initConstantMatrix(K, H, 0.15);//
         w.push_back(m);
         delta_w.push_back(MatrixXd::Zero(K, H));
     }
@@ -381,6 +390,18 @@ MatrixXd CTCLayer::initRandomMatrix(int m, int n) {
         }
     }
 //    cout << "\n";
+
+    return mat;
+}
+
+MatrixXd CTCLayer::initConstantMatrix(int m, int n, double ct) {
+    MatrixXd mat(m, n);
+
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            mat(i, j) = ct;
+        }
+    }
 
     return mat;
 }
@@ -425,9 +446,10 @@ void CTCLayer::initAlphabet() {
 
     map<char,int>::iterator it;
 
-    if(DEBUG)
-        for (it=alphabet.begin(); it!=alphabet.end(); ++it)
-           cout << it->first << " => " << it->second << '\n';
+//    if(DEBUG)
+//        for (it=alphabet.begin(); it!=alphabet.end(); ++it)
+//           cout << it->first << " => " << it->second << '\n';
+
 //    l = "mara";
 //    createExtendedLabel();
 //    cout << "=" << l_prime << "=\n";

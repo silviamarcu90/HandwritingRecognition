@@ -54,6 +54,7 @@ private:
     void initWeights();
     void initActivations();
     MatrixXd initRandomMatrix(int m, int n);
+    MatrixXd initConstantMatrix(int m, int n, double ct);
     MatrixXd compute_exp(MatrixXd a);
     void initAlphabet();
     char getKeyByValue(int k); /// get the key in alphabet-map knowing the value

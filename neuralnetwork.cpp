@@ -73,7 +73,7 @@ void NeuralNetwork::trainNetworkDebug(string imagePath) {
 
     int nbExamples;
     ImagesHandler im_handler;
-//    vector<string> trainset = im_handler.getDataSet("trainset.txt");
+    vector<string> trainset = im_handler.getDataSet("trainset.txt");
 //    vector<string> validationset = im_handler.getDataSet("validationset1.txt");
     nbExamples = 10;//trainset.size();
 
@@ -96,13 +96,17 @@ void NeuralNetwork::trainNetworkDebug(string imagePath) {
         outputLayer.validationError = 0.0;
 //        for(int eg = offset; eg < offset + nbExamples && eg < trainset.size(); ++eg)
 //        {
-//            string imagePath(trainset[eg]);
+            int eg = 0;
+            string imagePath(trainset[eg]);
             FeatureExtractor extractor(imagePath);
             vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();
+//            vector<VectorXd> sequenceOfFeatures;
+//            sequenceOfFeatures.push_back(originalSequenceOfFeatures[0]);
+//            sequenceOfFeatures.push_back(originalSequenceOfFeatures[1]);
             string label = im_handler.getTargetLabel(imagePath);
             cout << imagePath << "; label =" << label << "=" << endl;
-//            trainOneExample( sequenceOfFeatures, label );
             trainOneExampleDebug( sequenceOfFeatures, label );
+//            trainOneExampleWithPrints( sequenceOfFeatures, label );
 //        }
         outputLayer.trainError /= nbExamples;
         cout << "ctcError: " << outputLayer.trainError << "\n";
@@ -144,6 +148,38 @@ void NeuralNetwork::trainOneExample(vector<VectorXd> x, string label) {
 
 }
 
+void NeuralNetwork::trainOneExampleWithPrints(vector<VectorXd> x, string label) {
+
+    inputs = x;
+
+    /// forward pass
+    forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
+    backwardHiddenLayer.forwardPass(inputs);
+    outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
+
+//    /////////DEBUG//////////////
+//    cout << "FORWARD - layer\n";
+//    forwardHiddenLayer.print();
+//    cout << "BACKWARD - layer\n";
+//    backwardHiddenLayer.print();
+//    ////////////////////////////
+
+    /// backward pass
+    outputLayer.backwardPass();
+//    vector<MatrixXd> eps_c1 = outputLayer.getEpsilonCTC();
+//    forwardHiddenLayer.backwardPass(eps_c1[0]);
+//    backwardHiddenLayer.backwardPass(eps_c1[1]);
+
+//    /// update weights
+//    outputLayer.updateWeights(ETA);
+//    forwardHiddenLayer.updateWeights(ETA);
+//    backwardHiddenLayer.updateWeights(ETA);
+
+//    cout << "AFTER passing -- one example\n";
+//    cout << "#############################################################\n";
+
+}
+
 void NeuralNetwork::trainOneExampleDebug(vector<VectorXd> x, string label) {
 
     inputs = x;
@@ -160,7 +196,7 @@ void NeuralNetwork::trainOneExampleDebug(vector<VectorXd> x, string label) {
 //    backwardHiddenLayer.print();
 //    ////////////////////////////
     //DEBUG - gradient!
-    double epsilon = 1e-7;
+    double epsilon = 1e-5;
     int c = 0, i = 0, j = 0;
 
     /// backward pass
@@ -171,12 +207,12 @@ void NeuralNetwork::trainOneExampleDebug(vector<VectorXd> x, string label) {
 
     /// update weights
     outputLayer.updateWeights(ETA);
-//    forwardHiddenLayer.updateWeights(ETA);
-    backwardHiddenLayer.updateWeights(ETA);
+    forwardHiddenLayer.updateWeights(ETA);
+//    backwardHiddenLayer.updateWeights(ETA);
 
 
 //    cout << "AFTER passing -- one example\n";
-//    cout << "#############################################################\n";
+    cout << "#############################################################\n";
 
 
 //    cout << "w[0](1,1) = " << outputLayer.w[0](i,j) << "\n";
@@ -193,22 +229,22 @@ void NeuralNetwork::trainOneExampleDebug(vector<VectorXd> x, string label) {
 //    cout << "w[0](1,1) = " << outputLayer.w[0](i, j) << "\n";
 //    cout << "finite diff: " << (Oplus - Ominus)/(2*epsilon) << "\n";
 
-//    cout << "[NN] before:w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) << "\n";
-    backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) += epsilon;
+    cout << "[NN] before:w_hig(1,1) = " << forwardHiddenLayer.hiddenLayerNodes[c].w_hig(i) << "\n";
+    forwardHiddenLayer.hiddenLayerNodes[c].w_hig(i) += epsilon;
     forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
     backwardHiddenLayer.forwardPass(inputs);
     outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
     outputLayer.backwardPass();
     double Oplus = -outputLayer.computeObjectiveFunction();
-//    cout << "[NN]w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) << "\n";
+    cout << "[NN]w_hig(1,1) = " << forwardHiddenLayer.hiddenLayerNodes[c].w_hig(i) << "\n";
 
-    backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) -= 2*epsilon; //because I need to subtract the previous addition
+    forwardHiddenLayer.hiddenLayerNodes[c].w_hig(i) -= 2*epsilon; //because I need to subtract the previous addition
     forwardHiddenLayer.forwardPass(inputs); //for each input sequence (image with a word)
     backwardHiddenLayer.forwardPass(inputs);
     outputLayer.forwardPass(inputs.size(), label, forwardHiddenLayer.b_c, backwardHiddenLayer.b_c);
     outputLayer.backwardPass();
     double Ominus = -outputLayer.computeObjectiveFunction();
-//    cout << "[NN]w_ic(1,1) = " << backwardHiddenLayer.hiddenLayerNodes[c].w_ic(i) << "\n";
+    cout << "[NN]w_hig(1,1) = " << forwardHiddenLayer.hiddenLayerNodes[c].w_hig(i) << "\n";
     cout << "finite diff: " << (Oplus - Ominus)/(2*epsilon) << "\n";
 
 }
