@@ -78,14 +78,14 @@ public:
         }
     }
 
-    void trainNetwork();
+    void trainNetwork(int offset);
     void trainNetworkDebug(string imagePath);
 
     void trainOneExample(vector<VectorXd> x, string label);
     void trainOneExampleDebug(vector<VectorXd> x, string label);
     void trainOneExampleWithPrints(vector<VectorXd> x, string label);
 
-    void evaluateValidationSet(vector<string> validationset, ImagesHandler im_handler);
+    void evaluateValidationSet(vector<string> validationset, ImagesHandler im_handler, int off);
 
     void testInputImage(string imagePath, ImagesHandler im_handler);
 

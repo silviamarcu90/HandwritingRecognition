@@ -187,7 +187,6 @@ vector<MatrixXd> CTCLayer::getEpsilonCTC() {
                 eps_b(t, h) += delta_k(t, k) * w[1](k, h);
            }
     }
-    cout << "eps_b(t=0, h=0) " << eps_b(0, 0) << "\n";
 
     eps_c1.push_back(eps_f); //for the forward layer
     eps_c1.push_back(eps_b); // for the backward layer
@@ -210,21 +209,13 @@ void CTCLayer::updateWeights(double ETA) {
     }
 
     //DEBUG gradient
-    cout << "-----------------gradient is : " << deriv_w_forward(0, 0) << "\n";
+//    cout << "-----------------gradient is : " << deriv_w_forward(0, 0) << "\n";
 
     for(int k = 0; k < K; ++k) {
         for(int h = 0; h < H; ++h) {
-//            cout << delta_w_forward(k, h) << " "; //sometimes I get too big values!!: eg. 63
-//            updateOneWeight(ETA,  w[0](k, h), delta_w[0](k, h), deriv_w_forward(k, h));
-//            updateOneWeight(ETA,  w[1](k, h), delta_w[1](k, h), deriv_w_backward(k, h));
-
-//            w[0].coeffRef(k, h) -= ETA*deriv_w_forward(k, h);
-//            w[1].coeffRef(k, h) -= ETA*deriv_w_backward(k, h);
-
-//            cout << "w[0] " << w[0](k, h) << " ";
-//            cout << "w[1] " << w[1](k, h) << " ";
+            updateOneWeight(ETA,  w[0](k, h), delta_w[0](k, h), deriv_w_forward(k, h));
+            updateOneWeight(ETA,  w[1](k, h), delta_w[1](k, h), deriv_w_backward(k, h));
         }
-//        cout << "\n";
     }
 
 }

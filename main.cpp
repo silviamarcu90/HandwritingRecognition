@@ -23,7 +23,7 @@ void testRecoveredNet() {
     vector<string> validationset = im_handler.getDataSet("validationset1.txt");
     NeuralNetwork net("NETWORK_WEIGHTS");
     cout << "*********************************************************\n";
-    net.evaluateValidationSet(validationset, im_handler);
+    net.evaluateValidationSet(validationset, im_handler, 0);
     cout << "Validation error" << net.outputLayer.validationError << "\n";
 
 }
@@ -37,8 +37,8 @@ void testDecoding() {
     NeuralNetwork net("NETWORK_WEIGHTS");
 
     cout << "*TEST*********************************************************\n";
-    net.testInputImage(trainset[1], im_handler); //do forward pass through the network for an input example
-    cout << im_handler.getTargetLabel(trainset[1]) << "\n";
+    net.testInputImage(trainset[2], im_handler); //do forward pass through the network for an input example
+    cout << "target-label "<< im_handler.getTargetLabel(trainset[2]) << "\n";
     DecodingLayer decodingLayer(net.outputLayer.y,
                                 "/home/silvia/HandwritingRecognition/corpus/dictionary",
                                 net.outputLayer.alphabet);
@@ -57,17 +57,23 @@ void debugSmallNetwork() {
 }
 
 
-int main()
+int main(int argc, char* argv[])
 {
     Mat image; //a01-000u-03-02.png
     string imagePath("../words/a01/a01-000u/a01-000u-03-02.png");
     image = imread( imagePath,  CV_LOAD_IMAGE_GRAYSCALE );
+    int offset = 0;
 
     if( !image.data )
     {
         printf( "No image data \n" );
         return -1;
     }
+
+    if(argc > 1) {
+        sscanf(argv[1], "%d", &offset);
+    }
+    cout << "Offset = " << offset << "\n";
 
     //using random
 //    std::default_random_engine generator( time(NULL) );
@@ -90,11 +96,14 @@ int main()
 //    CTCLayer ctc(53, 5);
 
 /***********************************************************************/
-    NeuralNetwork net(50, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
-    net.trainNetworkDebug(imagePath);
+//    NeuralNetwork net(50, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
+//    net.trainNetwork();
+
+    //    net.trainNetworkDebug(imagePath);
 
 //    NeuralNetwork net("NETWORK_WEIGHTS");
-//    net.trainNetwork();
+//    net.trainNetwork(offset);
+    testDecoding();
 
     //DEBUG - small net
 //    debugSmallNetwork();
@@ -104,7 +113,6 @@ int main()
 //    DecodingLayer dec(y, "/home/silvia/HandwritingRecognition/corpus/dictionary");
 //    dec.init();
 
-//    testDecoding();
 
 //    ImagesHandler im_handler("../words");
 //    im_handler.readTargets();

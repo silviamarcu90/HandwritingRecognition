@@ -1,19 +1,20 @@
 #include "neuralnetwork.h"
 
-void NeuralNetwork::trainNetwork() {
+void NeuralNetwork::trainNetwork(int off) {
 
-    int offset = 10*2;
+    int  stepSize = 10; //1000
+    int offset = stepSize*off;
     int nbExamples;
     ImagesHandler im_handler;
     vector<string> trainset = im_handler.getDataSet("trainset.txt");
     vector<string> validationset = im_handler.getDataSet("validationset1.txt");
     nbExamples = 10;//trainset.size();
-    double minValidationError = 10e5;
+    double prevValidationError = 10e5;
 
     cout << "trainset_size: " << trainset.size() << "\n";
     cout << "validationset_size: " << validationset.size() << "\n";
 
-    out.open("trainErrors10Eg_10Iter10LSTM.01ETA+MIU+Valid.txt");
+    out.open("trainingErrors100Eg_10Iter50LSTM.01ETA+MIU+Valid.txt");
 
     if (!out.is_open())
     {
@@ -22,7 +23,7 @@ void NeuralNetwork::trainNetwork() {
     }
 
     //in a loop -- train the weights until a stop condition is fullfilled
-    for(int epoch = 0; epoch < 10/*MAX_ITER*/; ++ epoch)
+    for(int epoch = 0; epoch < 50/*MAX_ITER*/; ++ epoch)
     {
 
         outputLayer.trainError = 0.0; // the training error
@@ -40,12 +41,12 @@ void NeuralNetwork::trainNetwork() {
         outputLayer.trainError /= nbExamples;
         cout << "ctcError: " << outputLayer.trainError << "\n";
         cout << "*********************************************************\n";
-        evaluateValidationSet(validationset, im_handler);
+        evaluateValidationSet(validationset, im_handler, off);
         out << (epoch+1) << " " << outputLayer.trainError << " ";
         out << outputLayer.validationError << "\n";
-//        if(epoch > 10 && outputLayer.validationError - minValidationError > 0.1) //error starts to increase
-//            break;
-//        minValidationError = min(minValidationError, outputLayer.validationError);
+        if(epoch > 20 && outputLayer.validationError - prevValidationError > 0.1) //error starts to increase
+            break;
+        prevValidationError = outputLayer.validationError;//min(minValidationError, outputLayer.validationError);
 
     }
 
@@ -252,11 +253,12 @@ void NeuralNetwork::trainOneExampleDebug(vector<VectorXd> x, string label) {
 /**
  * validate network
  */
-void NeuralNetwork::evaluateValidationSet(vector<string> validationset, ImagesHandler im_handler) {
+void NeuralNetwork::evaluateValidationSet(vector<string> validationset, ImagesHandler im_handler, int off) {
 
     cout << "VALIDATE!\n";
     int setSize = 10;///validationset.size();
-    int offset = 10;//setSize;
+    int stepSize = 10;//500
+    int offset = off*stepSize;
 
     for(int i = offset; i < offset + setSize; ++ i)
     {
