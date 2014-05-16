@@ -2,19 +2,19 @@
 
 void NeuralNetwork::trainNetwork(int off) {
 
-    int  stepSize = 10; //1000
+    int  stepSize = 100; //1000
     int offset = stepSize*off;
     int nbExamples;
     ImagesHandler im_handler;
     vector<string> trainset = im_handler.getDataSet("trainset.txt");
     vector<string> validationset = im_handler.getDataSet("validationset1.txt");
-    nbExamples = 10;//trainset.size();
+    nbExamples = 100;//trainset.size();
     double prevValidationError = 10e5;
 
     cout << "trainset_size: " << trainset.size() << "\n";
     cout << "validationset_size: " << validationset.size() << "\n";
 
-    out.open("trainingErrors100Eg_10Iter50LSTM.01ETA+MIU+Valid.txt");
+    out.open("trainingErrors100Eg_100ITER50LSTM.001ETA+MIU+Valid.txt");
 
     if (!out.is_open())
     {
@@ -23,11 +23,14 @@ void NeuralNetwork::trainNetwork(int off) {
     }
 
     //in a loop -- train the weights until a stop condition is fullfilled
-    for(int epoch = 0; epoch < 50/*MAX_ITER*/; ++ epoch)
+    for(int epoch = 0; epoch < 100/*MAX_ITER*/; ++ epoch)
     {
 
         outputLayer.trainError = 0.0; // the training error
         outputLayer.validationError = 0.0;
+
+        random_shuffle ( trainset.begin() + offset, trainset.begin() + offset + nbExamples );
+
         for(int eg = offset; eg < offset + nbExamples && eg < trainset.size(); ++ eg)
         {
             string imagePath(trainset[eg]);
@@ -256,8 +259,8 @@ void NeuralNetwork::trainOneExampleDebug(vector<VectorXd> x, string label) {
 void NeuralNetwork::evaluateValidationSet(vector<string> validationset, ImagesHandler im_handler, int off) {
 
     cout << "VALIDATE!\n";
-    int setSize = 10;///validationset.size();
-    int stepSize = 10;//500
+    int setSize = 50;///validationset.size();
+    int stepSize = 100;//500
     int offset = off*stepSize;
 
     for(int i = offset; i < offset + setSize; ++ i)
@@ -285,7 +288,7 @@ void NeuralNetwork::evaluateValidationSet(vector<string> validationset, ImagesHa
 //test network
 void NeuralNetwork::testInputImage(string imagePath, ImagesHandler im_handler) {
 
-    cout << "TEST!\n";
+//    cout << "TEST!\n";
 
     FeatureExtractor extractor(imagePath);
     vector< VectorXd > sequenceOfFeatures = extractor.getFeatures();

@@ -37,7 +37,8 @@ void ImagesHandler::listFilesOfDir(string dir, vector<string>& allFiles) {
             listFilesOfDir(filepath, allFiles);
         else {// is an expected image
 //            cout << filepath << "\n";
-            allFiles.push_back(filepath);
+            if(getTargetLabel(filepath) != "")
+                allFiles.push_back(filepath);
         }
     }
 
@@ -56,14 +57,17 @@ void ImagesHandler::createMapImgTargetLabels() {
         cout << "Error when opening file!\n";
         return;
     }
-    int k = 0;
+//    int k = 0;
     string line;
     while (getline(infile, line))
     {
         vector<string> tokens = split(line, ' ');
-//        cout << "1: " << tokens[0] << "; " << tokens[tokens.size()-1] << "\n";
+//        cout << "1: " << tokens[0] << " " << tokens[1] << "; " << tokens[tokens.size()-1] << "\n";
+        if(tokens[1] == "err") //it was wrongly labeled
+            continue;
+//        cout << "1: " << tokens[0] << "\n";
         mapImgTarget.insert(pair<string, string>(tokens[0], tokens[tokens.size()-1]));
-        k++;
+//        k++;
 //        if(k == 10000)
 //            break;
     }
@@ -91,7 +95,7 @@ vector<string> ImagesHandler::getDataSet(string setTypeFile) {
         cout << "Error when opening file!\n";
     }
 
-    int k = 0;
+//    int k = 0;
     string line;
     string prevSuffix = "";
     cout << "Start parsing file: " + setTypeFile + "\n";
@@ -103,17 +107,16 @@ vector<string> ImagesHandler::getDataSet(string setTypeFile) {
         if(suffix.compare(prevSuffix) == 0) continue;
 //        cout << "1: " << tokens[0] << "; " << tokens[1] << "\n";
         listFilesOfDir(prefixPath + suffix, tmpSet);
-
         dataset.insert(dataset.end(), tmpSet.begin(), tmpSet.end());
-        k++;
-        if(k == 2) //extract only a part of the training set, i.e one subfolder
-            break;
+//        k++;
+//        if(k == 2) //extract only a part of the training set, i.e one subfolder
+//            break;
         prevSuffix = suffix;
     }
 
-//    for(int i = 0; i < trainset.size(); ++i)
-//        cout << trainset[i] << "\n";
-//    cout << trainset.size() << "\n";
+//    for(int i = 0; i < dataset.size(); ++i)
+//        cout << dataset[i] << "\n";
+//    cout << dataset.size() << "\n";
     return dataset;
 }
 

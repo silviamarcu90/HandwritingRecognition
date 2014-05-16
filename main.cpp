@@ -4,6 +4,7 @@
 #include <highgui.h>
 #include <iostream>
 #include <random>
+#include <map>
 #include <time.h>
 #include "../Eigen/Dense"
 #include "featureextractor.h"
@@ -28,13 +29,52 @@ void testRecoveredNet() {
 
 }
 
+vector<string> split(string line, char delim) {
+    stringstream ss(line);
+    string s;
+    vector<string> tokens;
+    while (getline(ss, s, delim)) {
+        tokens.push_back(s);
+    }
+    return tokens;
+}
+
+void buildNewDictionary() {
+
+    ifstream infile("/home/silvia/HandwritingRecognition/words.txt");
+    if(infile == NULL) {
+        cout << "Error when opening file!\n";
+        return;
+    }
+    map< string, string > corpusDict;
+
+    ofstream out("/home/silvia/HandwritingRecognition/corpus/myDictionary");
+    if(out == NULL) {
+        cout << "Error when opening file!\n";
+        return;
+    }
+
+    string line;
+    while (getline(infile, line))
+    {
+        vector<string> tokens = split(line, ' ');
+//        cout << "1: " << tokens[0] << "\n";
+        if(corpusDict.find(tokens[tokens.size()-1]) == corpusDict.end())
+        {
+            corpusDict.insert(pair<string, string>(tokens[tokens.size()-1], "ok"));
+            out << tokens[tokens.size()-1] << "\n";
+        }
+    }
+    out.close();
+}
+
 void testDecoding() {
 
     //use network-recovery constructor
     ImagesHandler im_handler;
     vector<string> trainset = im_handler.getDataSet("trainset.txt");
     vector<string> validationset = im_handler.getDataSet("validationset1.txt");
-    NeuralNetwork net("NETWORK_WEIGHTS");
+    NeuralNetwork net("NETWORK_WEIGHTS100LSTM");
 
     cout << "*TEST*********************************************************\n";
     net.testInputImage(trainset[2], im_handler); //do forward pass through the network for an input example
@@ -50,9 +90,51 @@ void testDecoding() {
 
 }
 
+void testDecodingOneSet() {
+
+    ImagesHandler im_handler;
+    vector<string> trainset = im_handler.getDataSet("trainset.txt");
+    vector<string> validationset = im_handler.getDataSet("validationset1.txt");
+    ofstream out;
+    string filename("DecodedLabels");
+    out.open(filename);
+
+    if (!out.is_open())
+    {
+        cout << "Failed to open file "  << filename << "\n";
+        return;
+    }
+
+    //use network-recovery constructor
+    NeuralNetwork net("NETWORK_WEIGHTS");
+    int setSize = 10;
+    int correct = 0;
+
+    cout << "*TEST*********************************************************\n";
+    for(int i = 0; i < setSize; ++i)
+    {
+        string target(im_handler.getTargetLabel(validationset[i]));
+        net.testInputImage(validationset[i], im_handler); //do forward pass through the network for an input example
+        out << target << "\t";
+        DecodingLayer decodingLayer(net.outputLayer.y,
+                                    "/home/silvia/HandwritingRecognition/corpus/dictionary",
+                                    net.outputLayer.alphabet);
+        decodingLayer.init();
+        vector<string> decodedLabels = decodingLayer.getDecodedLabels();//history
+        out << decodedLabels[0] << "\n";
+        for(int i = 0; i < decodedLabels.size(); ++i)
+            out << decodedLabels[i] << " ";
+        out << "\n\n";
+        if(decodedLabels[0] == target)
+            correct ++;
+    }
+    cout << "Total correct: " << correct << " of " << setSize << "\n";
+    out.close();
+}
+
 void debugSmallNetwork() {
     string imagePath("../words/a01/a01-000u/a01-000u-03-01.png");
-    NeuralNetwork net(1, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
+    NeuralNetwork net(50, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
     net.trainNetworkDebug(imagePath);
 }
 
@@ -97,13 +179,18 @@ int main(int argc, char* argv[])
 
 /***********************************************************************/
 //    NeuralNetwork net(50, 79); //1st arg: #hidden units; 2nd arg: #output_units(ctc)
-//    net.trainNetwork();
+//    net.trainNetwork(0);
 
     //    net.trainNetworkDebug(imagePath);
 
+    //RETRAIN
+//    offset = 4;
 //    NeuralNetwork net("NETWORK_WEIGHTS");
 //    net.trainNetwork(offset);
-    testDecoding();
+
+    testDecoding(); //one example
+//    testDecodingOneSet(); //many examples
+//    buildNewDictionary();
 
     //DEBUG - small net
 //    debugSmallNetwork();

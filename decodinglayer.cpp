@@ -1,17 +1,18 @@
 #include "decodinglayer.h"
 
 /**
- * Function used in constructor to init the dictionary of words considered
+ * Function used in constructor to init the dictionary D of words considered
  */
 void DecodingLayer::initDictionary(string dictionaryPath) {
 
+    string w;
     //read words from file
     ifstream in(dictionaryPath);
     if(in == NULL) {
         cout << "Error when opening file!\n";
         return;
     }
-    string w;
+
     while(in >> w)
         dictionary.push_back(w);
 }
@@ -48,14 +49,14 @@ word DecodingLayer::initTokensWord(string dictWord) {
 
     for(int i = 0; i < S+2; ++i) //S+2 because I need the special indices: -1 (output token) and 0 (input token)
     {
-        vector<token> vecTok;
+        vector<token> vecTok; //a row of the matrix -- for a specific segment _i_
         for(int j = 0; j < T; ++j)
         {
             token tok;
             tok.score = logZero; //init all with ln 0 = -inf
             vecTok.push_back(tok); //(-inf, empty-set)
         }
-        ret.tok.push_back(vecTok);
+        ret.tok.push_back(vecTok); //add the row to the matrix
     }
     //tok(w, s=1, t=1)
     ret.tok[2][0].score = safe_log( y(0, alphabet[' ']) );
@@ -95,11 +96,13 @@ vector<string> DecodingLayer::getDecodedLabels() {
                 token maxTok = words[i].tok[s+2][t-1];
 //                P.push_back(words[i].tok[s+2][t-1]);
 //                P.push_back(words[i].tok[s+1][t-1]);
+                int prevSeg = //(s == 0) ? 0 :
+                              s+1; // s+1 is different for the first segment !! better results without condition
 
-                if(words[i].tok[s+1][t-1].score > maxTok.score)
-                    maxTok = words[i].tok[s+1][t-1];
+                if(words[i].tok[prevSeg][t-1].score > maxTok.score)
+                    maxTok = words[i].tok[prevSeg][t-1];
 
-                if(w_prime[s] != ' ' && s > 2 && w_prime[s-2] != w_prime[s])
+                if(w_prime[s] != ' ' && s >= 2 && w_prime[s-2] != w_prime[s])
                 {
 //                    P.push_back(words[i].tok[s][t-1]);
                     if(words[i].tok[s][t-1].score > maxTok.score)
@@ -108,6 +111,8 @@ vector<string> DecodingLayer::getDecodedLabels() {
                 words[i].tok[s+2][t] = maxTok; //highest scoring token from set P
                 words[i].tok[s+2][t].score += safe_log( y(t, alphabet[w_prime[s]]) );
             }
+
+            //compute the highest score
             token maxTok = words[i].tok[S + 1][t];
             if(words[i].tok[S][t].score > maxTok.score)
                 maxTok = words[i].tok[S][t];
@@ -115,22 +120,22 @@ vector<string> DecodingLayer::getDecodedLabels() {
         }
     }
 
-    token maxTok = words[0].tok[1][T-1];
-    string bestword = "";
+
     //output the top 10 bestwords
-    for(int i = 1; i < nbWords; ++i)
-    {
-//        cout << words[i].tok[1][T-1].history[0] << "\n";
-        if(words[i].tok[1][T-1].score > maxTok.score)
-        {
-            bestword = words[i].label;
-            maxTok = words[i].tok[1][T-1];
-        }
-    }
+    sortVector(words);
+    token maxTok = words[0].tok[1][T-1];
+    string bestword = words[0].label;
 
-    cout << "bestword: " << bestword << "\n";
+    cout << "+++ ";
+    for(int i = 0; i < maxTok.history.size(); ++i)
+        cout << maxTok.history[i] <<  " ";
+    cout << "++++\n";
 
-    return maxTok.history;
+    vector<string> result;
+    for(int i = 0; i < 10; ++i)
+        result.push_back(words[i].label);
+
+    return result;//maxTok.history;
 }
 
 token DecodingLayer::getHighestScoreOutputToken(int t) {
@@ -157,3 +162,58 @@ string DecodingLayer::createExtendedLabel(string l) {
 //    cout << "l_prime = " << l_prime <<"\n";
     return l_prime;
 }
+
+
+bool compareByScore(const word &a, const word &b)
+{
+    int T = a.tok[1].size();
+    return a.tok[1][T-1].score > b.tok[1][T-1].score;
+}
+
+void DecodingLayer::sortVector(vector<word> &wordsVec)
+{
+    sort(wordsVec.begin(), wordsVec.end(), compareByScore);
+}
+
+
+
+//int levenstein(char *a, char *b){
+//    int cost[32][32] = {};
+//    int min = 10000;
+//    int i,j;
+//    m = strlen(a) + 1;
+//    n = strlen(b) + 1;
+
+//    printf("m = %d; n = %d\n", m, n);
+////    cost = (int**)malloc(m);
+////    for(i=0; i< m; i++)
+////        cost[i] = (int*)malloc(n);
+//    //initialization
+//    for(i=0; i < m; i++) // completez prima coloana
+//        cost[i][0] = i;
+//    for(i=0; i < n; i++) // completez prima linie
+//        cost[0][i] = i;
+//    for(i=1; i < m; i++)
+//        for(j=1; j < n; j++)
+//            if(a[i-1]==b[j-1])
+//                cost[i][j] = cost[i-1][j-1];
+//            else if(i >= 2 && j >= 2
+//                    && a[i-2] == b[j-1]
+//                    && a[i-1] == b[j-2]){ //compute min
+//                min=cost[i-2][j-2];
+//                if(min>cost[i-1][j])
+//                    min=cost[i-1][j];
+//                if(min>cost[i][j-1])
+//                    min=cost[i][j-1];
+//                cost[i][j] = 1 + min;
+//            }
+//            else{ //compute min
+//                min=cost[i-1][j-1];
+//                if(min>cost[i-1][j])
+//                    min=cost[i-1][j];
+//                if(min>cost[i][j-1])
+//                    min=cost[i][j-1];
+//                cost[i][j] = 1 + min;
+//            }
+//    return cost[m-1][n-1];
+//}

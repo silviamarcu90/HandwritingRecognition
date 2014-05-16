@@ -2,6 +2,7 @@
 #define NEURALNETWORK_H
 
 #include <fstream>
+#include <algorithm>
 #include "blstm.h"
 #include "forwardlayerlstm.h"
 #include "backwardlayerlstm.h"
@@ -28,7 +29,7 @@ public:
         I(NB_FEATURES),
         H(hiddenUnitsNum),
         K(outputUnitsNum),
-        ETA(0.01),
+        ETA(0.001),
         forwardHiddenLayer(hiddenUnitsNum),
         backwardHiddenLayer(hiddenUnitsNum),
         outputLayer(outputUnitsNum, hiddenUnitsNum) {

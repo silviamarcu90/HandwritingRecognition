@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <map>
 #include "../Eigen/Core"
 #include "log.h"
@@ -51,6 +52,7 @@ public:
     void init();
     vector<string> getDecodedLabels();
     token getHighestScoreOutputToken(int t);
+    void sortVector(vector<word> &wordsVec);
 
 };
 

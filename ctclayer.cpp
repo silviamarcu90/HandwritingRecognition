@@ -276,7 +276,7 @@ void CTCLayer::computeForwardVariable() {
                     alpha(t, u) = log_add( alpha(t, u), alpha(t-1, i) );
 //                if(t == 1 && u == 1)
 //                    cout << "for letter: " << alphabet[l_prime[u]] << ": " << y(t, alphabet[l_prime[u]]);
-                alpha(t, u) += safe_log(y(t, alphabet[l_prime[u]]) );
+                alpha(t, u) = log_multiply( alpha(t, u), safe_log(y(t, alphabet[l_prime[u]])) );
 //            }
 //            cout << alpha(t, u) << " ";
         }
@@ -306,7 +306,7 @@ void CTCLayer::computeBackwardVariable() {
 //                beta(t, u) = safe_log(0);
 //            else {
                 int upperBound = g_u(u);
-                beta(t,u) = beta(t+1, u) + safe_log ( y(t+1, alphabet[l_prime[u]]) );
+                beta(t,u) = log_multiply( beta(t+1, u), safe_log ( y(t+1, alphabet[l_prime[u]]) ) );
                 for(int i = u + 1; i <= upperBound; ++i)
                     beta(t,u) = log_add( beta(t, u), beta(t+1, i) + safe_log( y(t+1, alphabet[l_prime[i]])) );
 //            }
